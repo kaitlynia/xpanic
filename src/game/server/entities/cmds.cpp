@@ -19,7 +19,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 	if(!strncmp(Msg->m_pMessage, "/login", 6))
 	{
 		LastChat();		
-		if(GameServer()->m_World.m_Paused) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Please wait end round!");
+		if(GameServer()->m_World.m_Paused) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Please wait for the round to end!");
 		
 		char Username[256], Password[256];
 		if(sscanf(Msg->m_pMessage, "/login %s %s", Username, Password) != 2) 
@@ -35,16 +35,16 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 	else if(!strncmp(Msg->m_pMessage, "/register", 9))
 	{
 		LastChat();
-		if(GameServer()->m_World.m_Paused)  return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Please wait end round!");
+		if(GameServer()->m_World.m_Paused)  return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Please wait for the round to end!");
 		
 		char Username[256], Password[256];
 		if(sscanf(Msg->m_pMessage, "/register %s %s", Username, Password) != 2) 
 			return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Use /register <username> <password>'");
 		
 		if(str_length(Username) > 15 || str_length(Username) < 4 || str_length(Password) > 15 || str_length(Password) < 4)
-			return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Username / Password must contain 4-15 characters");
+			return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Username and Password must contain 4-15 characters");
 		else if (!strcmp(Username, Password))
-			return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Username and Password must be differend");
+			return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Username and Password must be different");
 
 		m_pPlayer->m_pAccount->Register(Username, Password);
 		return;
@@ -55,7 +55,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		LastChat();
 		int size = 0;
 		if ((sscanf(Msg->m_pMessage, "/sd %d", &size)) != 1)
-			return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Please use: /sd <idsound>");
+			return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Use /sd <idsound>");
 
 		if (m_pPlayer->GetTeam() == TEAM_SPECTATORS || !GameServer()->GetPlayerChar(m_pPlayer->GetCID()))
 			return;
@@ -68,16 +68,15 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 	else if(!strcmp(Msg->m_pMessage, "/logout"))
 	{
 		LastChat();
-		if(!m_pPlayer->m_AccData.m_UserID) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You aren't logget in");
-		if(GameServer()->m_World.m_Paused) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Please wait end round!");
-		if (GameServer()->m_pController->NumZombs() == 1 && m_pPlayer->GetTeam() == TEAM_RED) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You last zombie!");
-		if (GameServer()->m_pController->NumPlayers() < 3 && GameServer()->m_pController->m_Warmup)	return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Wait for the beginning of the round");
+		if(!m_pPlayer->m_AccData.m_UserID) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You aren't logged in!");
+		if(GameServer()->m_World.m_Paused) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Please wait for the round to end!");
+		if (GameServer()->m_pController->NumZombs() == 1 && m_pPlayer->GetTeam() == TEAM_RED) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You can't log out as the last zombie!");
+		if (GameServer()->m_pController->NumPlayers() < 3 && GameServer()->m_pController->m_Warmup)	return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Wait for the round to start!");
 
 		m_pPlayer->m_pAccount->Apply(), m_pPlayer->m_pAccount->Reset();
 
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Successes! You logout.");
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You can login again with the command:");
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "/login <username> <password>");
+		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Logged out.");
+		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Use /login <username> <password> to login again");
 
 		if(GameServer()->GetPlayerChar(m_pPlayer->GetCID()) && GameServer()->GetPlayerChar(m_pPlayer->GetCID())->IsAlive())
 			GameServer()->GetPlayerChar(m_pPlayer->GetCID())->Die(m_pPlayer->GetCID(), WEAPON_GAME);
@@ -88,23 +87,23 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 	else if (!strncmp(Msg->m_pMessage, "/upgr", 5))
 	{
 		LastChat();
-		if (!m_pPlayer->m_AccData.m_UserID) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You are not logged in! Type '/account' for more information!");
+		if (!m_pPlayer->m_AccData.m_UserID) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You are not logged in! Use /account for more information");
 
 		char supgr[256], andg[64];
 		if (sscanf(Msg->m_pMessage, "/upgr %s", supgr) != 1)
 		{
-			GameServer()->SendChatTarget(m_pPlayer->GetCID(), "/upgr <Type>"), GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Types: dmg, hp, handle, ammoregen, ammo, stats");
+			GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Use /upgr <dmg>, <hp>, <handle>, <ammoregen>, <ammo>, <stats> to upgrade stats");
 			return;
 		}
 		if (!strcmp(supgr, "handle"))
 		{
 			if (m_pPlayer->m_AccData.m_Handle >= 300)
-				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Maximal Handle level!");
+				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Maximum handle level already reached (300).");
 			if (m_pPlayer->m_AccData.m_Money <= 0)
-				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You have not money counts!");
+				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Insufficient money (1 needed).");
 
 			m_pPlayer->m_AccData.m_Money--, m_pPlayer->m_AccData.m_Handle++;
-			str_format(andg, sizeof(andg), "Upgrade Handle new is: %d, Your money: %d", m_pPlayer->m_AccData.m_Handle, m_pPlayer->m_AccData.m_Money);
+			str_format(andg, sizeof(andg), "New handle: %d, Your money: %d", m_pPlayer->m_AccData.m_Handle, m_pPlayer->m_AccData.m_Money);
 			GameServer()->SendChatTarget(m_pPlayer->GetCID(), andg);
 			m_pPlayer->m_pAccount->Apply();
 			return;
@@ -112,12 +111,12 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		else if (!strcmp(supgr, "dmg"))
 		{
 			if (m_pPlayer->m_AccData.m_Dmg >= 21)
-				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Maximal Damage level!");
+				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Maximum damage level already reached (21).");
 			if (m_pPlayer->m_AccData.m_Money <= 0)
-				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You have not money counts!");
+				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Insufficient money (1 needed).");
 
 			m_pPlayer->m_AccData.m_Money--, m_pPlayer->m_AccData.m_Dmg++;
-			str_format(andg, sizeof(andg), "Upgrade Damage new is: %d, Your money: %d", m_pPlayer->m_AccData.m_Dmg, m_pPlayer->m_AccData.m_Money);
+			str_format(andg, sizeof(andg), "New damage: %d, Your money: %d", m_pPlayer->m_AccData.m_Dmg, m_pPlayer->m_AccData.m_Money);
 			GameServer()->SendChatTarget(m_pPlayer->GetCID(), andg);
 			m_pPlayer->m_pAccount->Apply();
 			return;
@@ -125,12 +124,12 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		else if (!strcmp(supgr, "hp"))
 		{
 			if (m_pPlayer->m_AccData.m_Health >= 100)
-				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Maximal hp level!");
+				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Maximum HP level already reached (100).");
 			if (m_pPlayer->m_AccData.m_Money <= 0)
-				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You have not money counts!");
+				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Insufficient money (1 needed).");
 
 			m_pPlayer->m_AccData.m_Money--, m_pPlayer->m_AccData.m_Health++;
-			str_format(andg, sizeof(andg), "Upgrade Health new is: %d, Maximum health: %d, Your money: %d", m_pPlayer->m_AccData.m_Health, 1000 + m_pPlayer->m_AccData.m_Health * 10 + m_pPlayer->m_AccData.m_Level * 20, m_pPlayer->m_AccData.m_Money);
+			str_format(andg, sizeof(andg), "New HP: %d, Maximum HP: %d, Your money: %d", m_pPlayer->m_AccData.m_Health, 1000 + m_pPlayer->m_AccData.m_Health * 10 + m_pPlayer->m_AccData.m_Level * 20, m_pPlayer->m_AccData.m_Money);
 			GameServer()->SendChatTarget(m_pPlayer->GetCID(), andg);
 			m_pPlayer->m_pAccount->Apply();
 			return;
@@ -138,12 +137,12 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		else if (!strcmp(supgr, "ammoregen"))
 		{
 			if (m_pPlayer->m_AccData.m_Ammoregen >= 60)
-				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Maximal ammoregen level!");
+				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Maximum ammo regen level already reached (60).");
 			if (m_pPlayer->m_AccData.m_Money <= 0)
-				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You have not money counts!");
+				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Insufficient money (1 needed).");
 
 			m_pPlayer->m_AccData.m_Money--, m_pPlayer->m_AccData.m_Ammoregen++;
-			str_format(andg, sizeof(andg), "Upgrade Ammoregen new is: %d, Your money: %d", m_pPlayer->m_AccData.m_Ammoregen, m_pPlayer->m_AccData.m_Money);
+			str_format(andg, sizeof(andg), "New ammo regen: %d, Your money: %d", m_pPlayer->m_AccData.m_Ammoregen, m_pPlayer->m_AccData.m_Money);
 			GameServer()->SendChatTarget(m_pPlayer->GetCID(), andg);
 			m_pPlayer->m_pAccount->Apply();
 			return;
@@ -151,12 +150,12 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		else if (!strcmp(supgr, "ammo"))
 		{
 			if (m_pPlayer->m_AccData.m_Ammo >= 20)
-				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Maximal ammo level!");
+				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Maximum ammo level already reached (20).");
 			if (m_pPlayer->m_AccData.m_Money < 10)
-				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You have not money counts. Need 10 money!");
+				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Insufficient money (10 needed).");
 
 			m_pPlayer->m_AccData.m_Money -= 10, m_pPlayer->m_AccData.m_Ammo++;
-			str_format(andg, sizeof(andg), "Upgrade Ammo new is: %d, Your money: %d", GameServer()->GetPlayerChar(m_pPlayer->GetCID())->m_mAmmo + m_pPlayer->m_AccData.m_Ammo, m_pPlayer->m_AccData.m_Money);
+			str_format(andg, sizeof(andg), "New ammo: %d, Your money: %d", GameServer()->GetPlayerChar(m_pPlayer->GetCID())->m_mAmmo + m_pPlayer->m_AccData.m_Ammo, m_pPlayer->m_AccData.m_Money);
 			GameServer()->SendChatTarget(m_pPlayer->GetCID(), andg);
 			m_pPlayer->m_pAccount->Apply();
 			return;
@@ -165,18 +164,16 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		{
 			char aBuf2[32];
 			GameServer()->SendChatTarget(m_pPlayer->GetCID(), "~~~~~~~~ ! Upgr stats details ! ~~~~~~~~");
-			str_format(aBuf2, sizeof(aBuf2), "Dmg: %d", m_pPlayer->m_AccData.m_Dmg);
+			str_format(aBuf2, sizeof(aBuf2), "Damage: %d", m_pPlayer->m_AccData.m_Dmg);
 			GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf2);
 			str_format(aBuf2, sizeof(aBuf2), "HP: %d", m_pPlayer->m_AccData.m_Health);
 			GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf2);
 			str_format(aBuf2, sizeof(aBuf2), "Handle: %d", m_pPlayer->m_AccData.m_Handle);
 			GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf2);
-			str_format(aBuf2, sizeof(aBuf2), "AmmoRegen: %d", m_pPlayer->m_AccData.m_Ammoregen);
+			str_format(aBuf2, sizeof(aBuf2), "Ammo regen: %d", m_pPlayer->m_AccData.m_Ammoregen);
 			GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf2);
 			str_format(aBuf2, sizeof(aBuf2), "Ammo: %d", m_pPlayer->m_AccData.m_Ammo);
-			GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf2);						
-			GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You can upgrade your account with the command:");
-			GameServer()->SendChatTarget(m_pPlayer->GetCID(), "/upgr info");
+			GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf2);
 			GameServer()->SendChatTarget(m_pPlayer->GetCID(), "~~~~~~~~ ! Upgr stats details ! ~~~~~~~~");
 			return;
 		}
@@ -185,7 +182,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 	else if(!strncmp(Msg->m_pMessage, "/turret", 7))
 	{
 		LastChat();
-		if(!m_pPlayer->m_AccData.m_UserID) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You are not logged in! Type '/account' for more information!");
+		if(!m_pPlayer->m_AccData.m_UserID) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You are not logged in! Use /account for more information!");
 
 		char supgr[256], andg[64];
 		if (sscanf(Msg->m_pMessage, "/turret %s", supgr) != 1)
@@ -487,16 +484,10 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 	else if(!strcmp(Msg->m_pMessage, "/rules"))
 	{
 		LastChat();
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "rule 1 nope can sell");
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "rule 2 dont farm (freeze acc)");
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "rule 3 dont insult (mute/ban 1-7 day)");
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "rule 4 dont share acc(only when agree)(freeze acc)");
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "rule 5 dont talk about other servers(ip ban)");
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "rule 6 dont use bots(perma ban)");
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "rule 7 dont teamkill (ban 1-7 day");
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "rule 8 dont sell accounts (perma ban)");
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "rule 9 no selfkill");
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "rule 10 everyone who use bugs (freeze + ban)");
+		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "1. Don't farm XP (freeze acc)");
+		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "2. Don't insult (mute/ban 1-7 day)");
+		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "3. Don't use bots (perma ban)");
+		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "4. Don't self-kill (same as farming)");
 		return;
 	}
 	else if (!strcmp(Msg->m_pMessage, "/heart"))
@@ -504,9 +495,9 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		LastChat();
 		if (!m_pPlayer->m_AccData.m_UserID) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You are not logged in! Type '/account' for more information!");
 		if (!GameServer()->GetPlayerChar(m_pPlayer->GetCID())) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Use only if you alive!");
-		if (GameServer()->m_World.m_Paused) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Please wait end round!");
+		if (GameServer()->m_World.m_Paused) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Please wait for the round to end!");
 		if(m_pPlayer->GetTeam() != TEAM_RED) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Available only zombies!");
-		if (m_pPlayer->m_Score < 20) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Need 20 score!");
+		if (m_pPlayer->m_Score < 20) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Insufficient score (20).");
 
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Done!");
 		m_pPlayer->m_Score -= 20;
@@ -518,10 +509,10 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 	else if (!strcmp(Msg->m_pMessage, "/jump"))
 	{
 		LastChat();
-		if (!m_pPlayer->m_AccData.m_UserID) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You are not logged in! Type '/account' for more information!");
-		if (!GameServer()->GetPlayerChar(m_pPlayer->GetCID())) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Use only if you alive!");
-		if (GameServer()->m_World.m_Paused) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Please wait end round!");
-		if (m_pPlayer->m_Score < 3) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Need 3 score!");
+		if (!m_pPlayer->m_AccData.m_UserID) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You are not logged in! Use /account for more information");
+		if (!GameServer()->GetPlayerChar(m_pPlayer->GetCID())) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Use only if you are alive!");
+		if (GameServer()->m_World.m_Paused) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Please wait for the round to end.");
+		if (m_pPlayer->m_Score < 3) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Insufficient score (3).");
 
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Done!");
 		m_pPlayer->m_JumpsShop++;
@@ -532,12 +523,12 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 	else if (!strcmp(Msg->m_pMessage, "/range"))
 	{
 		LastChat();
-		if (!m_pPlayer->m_AccData.m_UserID) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You are not logged in! Type '/account' for more information!");
+		if (!m_pPlayer->m_AccData.m_UserID) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You are not logged in! Use /account for more information!");
 
-		if (!GameServer()->GetPlayerChar(m_pPlayer->GetCID())) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Use only if you alive!");
-		if (GameServer()->m_World.m_Paused) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Please wait end round!");
-		if (m_pPlayer->GetTeam() != TEAM_RED) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Available only zombies!");
-		if (m_pPlayer->m_Score < 10) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Need 10 score!");
+		if (!GameServer()->GetPlayerChar(m_pPlayer->GetCID())) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Use only if you are alive!");
+		if (GameServer()->m_World.m_Paused) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Please wait for the round to end.");
+		if (m_pPlayer->GetTeam() != TEAM_RED) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Available only to zombies!");
+		if (m_pPlayer->m_Score < 10) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Insufficient score (10).");
 
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Done!");
 		m_pPlayer->m_RangeShop = true;
@@ -554,12 +545,12 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf);
 		return;
 	}
-	else if (!strncmp(Msg->m_pMessage, "/pm", 3))
+	else if (!strncmp(Msg->m_pMessage, "/w", 3))
 	{
 		LastChat();
 		int id;
-		if (sscanf(Msg->m_pMessage, "/pm %d", &id) != 1)
-			return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Use /pm <id> <text>");
+		if (sscanf(Msg->m_pMessage, "/w %d", &id) != 1)
+			return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Use /w <id> <text>");
 		
 		int cid2 = clamp(id, 0, (int)MAX_CLIENTS - 1);
 		char pLsMsg[128];
