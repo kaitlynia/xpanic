@@ -1,3 +1,9 @@
+# xPanic-specific files
+/accounts/
+/maps/
+/autoexec_server.cfg
+/autoexec_server.log
+
 # Prerequisites
 *.d
 
