@@ -733,13 +733,9 @@ void CGameContext::OnClientEnter(int ClientID)
 		SendVoteSet(ClientID);
 
 	char Name[96];
-	str_format(Name, sizeof(Name), "Welcome '%s' to the %s", Server()->ClientName(ClientID), g_Config.m_SvGametype);
-	SendChatTarget(ClientID, Name);
-	SendChatTarget(ClientID, "Type '/cmdlist' to get a full list of commands!");
-	str_format(Name, sizeof(Name), "Type '/news' to get a full news of %s!", g_Config.m_SvGametype);
-	SendChatTarget(ClientID, Name);
-	SendChatTarget(ClientID, "Type '/register <username> <password>' for registration!");
-	SendChatTarget(ClientID, "Type '/login <username> <password>' for join to the game!");
+	SendChatTarget(ClientID, "Use /register <username> <password> to create an account");
+	SendChatTarget(ClientID, "Use /login <username> <password> to rejoin");
+	SendChatTarget(ClientID, "Use /cmdlist' for a list of commands");
 
 	m_pController->CheckZomb();
 	m_apPlayers[ClientID]->m_Authed = ((CServer*)Server())->m_aClients[ClientID].m_Authed;
