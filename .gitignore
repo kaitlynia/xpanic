@@ -1,8 +1,15 @@
 # xPanic-specific files
+/DDNet-Server
 /accounts/
 /maps/
 /autoexec_server.cfg
 /autoexec_server.log
+
+# bam
+/.bam/
+
+# Python
+__pycache__/
 
 # Prerequisites
 *.d
