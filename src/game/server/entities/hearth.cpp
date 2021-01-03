@@ -11,7 +11,7 @@ CLifeHearth::CLifeHearth(CGameWorld *pGameWorld, vec2 Pos, int Owner)
 {
 	m_Pos = Pos;
 	m_Owner = Owner;
-	m_Lifetime = 0;
+	m_Lifetime = 1*Server()->TickSpeed();
 	GameWorld()->InsertEntity(this);	
 	Fistheart = false;
 }
@@ -92,9 +92,6 @@ void CLifeHearth::Tick()
 
 	if (distance(pTarget->m_Pos, m_Pos) < pTarget->m_ProximityRadius + 2.0f && GameServer()->m_apPlayers[m_Owner]->m_LifeActives)
 	{
-		if (pTarget && pTarget->GetPlayer())
-			pTarget->GetPlayer()->SetZomb(m_Owner);
-
 		return Reset();
 	}
 }
