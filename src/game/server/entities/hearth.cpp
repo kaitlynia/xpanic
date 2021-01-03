@@ -11,7 +11,7 @@ CLifeHearth::CLifeHearth(CGameWorld *pGameWorld, vec2 Pos, int Owner)
 {
 	m_Pos = Pos;
 	m_Owner = Owner;
-	m_Lifetime = 1*Server()->TickSpeed();
+	m_Lifetime = 0;
 	GameWorld()->InsertEntity(this);	
 	Fistheart = false;
 }
