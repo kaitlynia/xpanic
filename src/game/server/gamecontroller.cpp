@@ -684,7 +684,15 @@ void IGameController::OnHoldpoint(int Index)
 	if(m_Door[Index].m_Tick || !(m_Door[Index].m_State == DOOR_CLOSED) || !ZombStarted() || GetDoorTime(Index) == -1)
 		return;
 
-	m_Door[Index].m_Tick = Server()->Tick() + Server()->TickSpeed()*GetDoorTime(Index)-1; // -1: if doortime is 5 we get a doublemessage (but srsly a 5 seconds door?)
+	int const doorTime = GetDoorTime(Index);
+
+	// -1: if doortime is 5 we get a doublemessage (but srsly a 5 seconds door?)
+	m_Door[Index].m_Tick = Server()->Tick() + Server()->TickSpeed()*doorTime-1;
+
+	// issue "door open" message to clients
+	char aBuf[32];
+	str_format(aBuf, sizeof(aBuf), "%d seconds before door opens", doorTime);
+	GameServer()->SendChat(-1, CGameContext::CHAT_ALL, aBuf);
 }
 
 void IGameController::OnZHoldpoint(int Index)
