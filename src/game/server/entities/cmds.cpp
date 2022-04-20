@@ -29,7 +29,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 			return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Username / Password must contain 4-15 characters");
 
 		m_pPlayer->m_pAccount->Login(Username, Password);
-		return;
 	}
 
 	else if(!strncmp(Msg->m_pMessage, "/register", 9))
@@ -47,7 +46,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 			return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Username and Password must be different");
 
 		m_pPlayer->m_pAccount->Register(Username, Password);
-		return;
 	}
 
 	else if (!strncmp(Msg->m_pMessage, "/sd", 3) && GameServer()->Server()->IsAuthed(m_pPlayer->GetCID()))
@@ -62,7 +60,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 
 		int soundid = clamp(size, 0, 40);
 		GameServer()->CreateSound(GameServer()->GetPlayerChar(m_pPlayer->GetCID())->m_Pos, soundid);
-		return;
 	}
 
 	else if(!strcmp(Msg->m_pMessage, "/logout"))
@@ -80,8 +77,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 
 		if(GameServer()->GetPlayerChar(m_pPlayer->GetCID()) && GameServer()->GetPlayerChar(m_pPlayer->GetCID())->IsAlive())
 			GameServer()->GetPlayerChar(m_pPlayer->GetCID())->Die(m_pPlayer->GetCID(), WEAPON_GAME);
-
-		return;
 	}
 
 	else if (!strncmp(Msg->m_pMessage, "/upgr", 5))
@@ -301,7 +296,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		{
 			str_format(andg, sizeof(andg), "No such turret upgrade: '%s'!", supgr);
 			GameServer()->SendChatTarget(m_pPlayer->GetCID(), andg);
-			return;
 		}
 	}
 	else if (!str_comp_nocase(Msg->m_pMessage, "/me") || !str_comp_nocase(Msg->m_pMessage, "/status") || !str_comp_nocase(Msg->m_pMessage, "/stats"))
@@ -576,7 +570,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		}
 	}
 
-	if(!strncmp(Msg->m_pMessage, "/", 1))
+	else if(!strncmp(Msg->m_pMessage, "/", 1))
 	{
 		LastChat();
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Wrong command. Use /cmdlist");
