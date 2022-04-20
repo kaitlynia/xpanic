@@ -18,7 +18,7 @@
 #include "gamemodes/DDRace.h"
 #include "entities/turret.h"
 #include <string.h>
- 
+
 enum
 {
 	RESET,
@@ -221,6 +221,11 @@ void CGameContext::CallVote(int ClientID, const char *aDesc, const char *aCmd, c
 	CPlayer *pPlayer = m_apPlayers[ClientID];
 	if(!pPlayer)
 		return;
+	else if (pPlayer->GetTeam() == TEAM_RED)
+	{
+		SendChatTarget(ClientID, "Zombies cannot start new votes");
+		return;
+	}
 
 	SendChat(-1, CGameContext::CHAT_ALL, aChatmsg);
 	StartVote(aDesc, aCmd, pReason);
@@ -285,7 +290,7 @@ void CGameContext::SendChat(int ChatterClientID, int Team, const char *pText, in
 		// send to the clients
 		for(int i = 0; i < MAX_CLIENTS; i++)
 		{
-			if(m_apPlayers[i] != 0) 
+			if(m_apPlayers[i] != 0)
 				Server()->SendPackMsg(&Msg, MSGFLAG_VITAL|MSGFLAG_NORECORD, i);
 		}
 	}
@@ -760,16 +765,16 @@ void CGameContext::OnClientConnected(int ClientID)
 }
 
 void CGameContext::OnClientDrop(int ClientID, const char *pReason)
-{		
+{
 	AbortVoteKickOnDisconnect(ClientID);
 	m_apPlayers[ClientID]->OnDisconnect(pReason);
-	
+
 	delete m_apPlayers[ClientID];
 	m_apPlayers[ClientID] = 0;
-	
+
 	if(!m_pController->NumZombs() && m_pController->ZombStarted() && !m_pController->m_Warmup)
 		m_pController->RandomZomb(-2);
-	
+
 	m_pController->CheckZomb();
 	m_VoteUpdate = true;
 
@@ -790,8 +795,8 @@ void CGameContext::SendPM(int ClientID, int FromID, char *string)
 		str_format(aBuf, sizeof(aBuf), "pm from '%s': %s", Server()->ClientName(ClientID), string);
 		SendChatTarget(FromID, aBuf);
 		str_format(aBuf, sizeof(aBuf), "pm to '%s': %s", Server()->ClientName(FromID), string);
-		SendChatTarget(ClientID, aBuf);	
-	}	
+		SendChatTarget(ClientID, aBuf);
+	}
 }
 
 void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
@@ -1192,7 +1197,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 			pPlayer->m_LastEmote = Server()->Tick();
 			SendEmoticon(ClientID, pMsg->m_Emoticon);
-			
+
 			CCharacter* pChr = pPlayer->GetCharacter();
 			if(pChr && pPlayer->m_EyeEmote && pPlayer->GetTeam() == TEAM_BLUE && !pPlayer->m_AccData.m_Freeze)
 			{
