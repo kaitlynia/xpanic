@@ -331,27 +331,6 @@ void CHud::RenderConnectionWarning()
 	}
 }
 
-void CHud::RenderTeambalanceWarning()
-{
-	// render prompt about team-balance
-	bool Flash = time_get()/(time_freq()/2)%2 == 0;
-	if(m_pClient->m_Snap.m_pGameInfoObj->m_GameFlags&GAMEFLAG_TEAMS)
-	{
-		int TeamDiff = m_pClient->m_Snap.m_aTeamSize[TEAM_RED]-m_pClient->m_Snap.m_aTeamSize[TEAM_BLUE];
-		if (g_Config.m_ClWarningTeambalance && (TeamDiff >= 2 || TeamDiff <= -2))
-		{
-			const char *pText = Localize("Please balance teams!");
-			if(Flash)
-				TextRender()->TextColor(1,1,0.5f,1);
-			else
-				TextRender()->TextColor(0.7f,0.7f,0.2f,1.0f);
-			TextRender()->Text(0x0, 5, 50, 6, pText, -1);
-			TextRender()->TextColor(1,1,1,1);
-		}
-	}
-}
-
-
 void CHud::RenderVoting()
 {
 	if((!g_Config.m_ClShowVotesAfterVoting && !m_pClient->m_pScoreboard->Active() && m_pClient->m_pVoting->TakenChoice()) || !m_pClient->m_pVoting->IsVoting() || Client()->State() == IClient::STATE_DEMOPLAYBACK)
@@ -565,7 +544,6 @@ void CHud::OnRender()
 		RenderFps();
 		if(Client()->State() != IClient::STATE_DEMOPLAYBACK)
 			RenderConnectionWarning();
-		RenderTeambalanceWarning();
 		RenderVoting();
 		if (g_Config.m_ClShowRecord)
 			RenderRecord();
