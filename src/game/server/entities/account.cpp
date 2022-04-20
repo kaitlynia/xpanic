@@ -116,7 +116,7 @@ void CAccount::Register(char *Username, char *Password)
 	char *p = strpbrk(Username, Filter);
 	if(!p)
 	{
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Don't use valid chars for username!");
+		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Don't use invalid chars for username!");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "A - Z, a - z, 0 - 9, . - _");
 		return;
 	}
@@ -251,7 +251,7 @@ void CAccount::NewPassword(char *NewPassword)
 	char *p = strpbrk(NewPassword, Filter);
 	if(!p)
 	{
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Don't use valid chars for password!");
+		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Don't use invalid chars for password!");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "A - Z, a - z, 0 - 9, . - _");
 		return;
 	}
