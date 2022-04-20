@@ -327,7 +327,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You can change your password with the command:");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "/password <new password>");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "~~~~~~~~ ! Your account details ! ~~~~~~~~");
-		return;
 	}
 	else if(!strncmp(Msg->m_pMessage, "/idlist", 7))
 	{
@@ -341,7 +340,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 				GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf);
 			}
 		}
-		return;
 	}
 	else if(!strncmp(Msg->m_pMessage, "/password", 9))
 	{
@@ -354,7 +352,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 			return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Use \"/password <new password>\"");
 
 		m_pPlayer->m_pAccount->NewPassword(NewPassword);
-		return;
 	}
 	else if (!strcmp(Msg->m_pMessage, "/info"))
 	{
@@ -365,7 +362,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf);
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Panic mod by Kurosio, helper: nope");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "~~~~~~~~ Welcome to info! ~~~~~~~~");
-		return;
 	}
 	else if(!strcmp(Msg->m_pMessage, "/help"))
     {
@@ -380,7 +376,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "/levels - info about level");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "/shop - shop score tees");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "~~~~~~~~ Welcome to help! ~~~~~~~~");
-		return;
     }
 	else if (!strcmp(Msg->m_pMessage, "/levels"))
 	{
@@ -388,7 +383,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Since 40: your shotgun spread growing by 1 bullet per 10 levels");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Since 50: +10 ammo");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Since 100: +10 ammo");
-		return;
 	}
 	else if (!strcmp(Msg->m_pMessage, "/account"))
 	{
@@ -399,7 +393,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "/logout - Logout from your account");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "/password - Change account password");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "--- Account ---");
-		return;
 	}
 	else if (!strcmp(Msg->m_pMessage, "/shop"))
 	{
@@ -408,13 +401,11 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "/range [10 score] - Buy range zombie hammer");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "/heart [20 score] - Buy 1 heart if you zombie team");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "/jump [3 score] - Buy 1 other jump");
-		return;
 	}
 	else if (!strcmp(Msg->m_pMessage, "/news"))
 	{
 		LastChat();
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Added basic ranked system");
-		return;
 	}
 	else if (!strcmp(Msg->m_pMessage, "/policehelp"))
 	{
@@ -422,7 +413,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "/kick <id> - kick player ids");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "/freeze <id> - freeze/unfreeze player");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "/idlist - view ids players");
-		return;
 	}
 	else if(!strcmp(Msg->m_pMessage, "/cmdlist"))
 	{
@@ -439,7 +429,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 			GameServer()->SendChatTarget(m_pPlayer->GetCID(), "#/policehelp - help for police group");
 		}
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "~~~~~~~~ Welcome to cmdlist! ~~~~~~~~");
-		return;
 	}
 	else if(!strcmp(Msg->m_pMessage, "/rules"))
 	{
@@ -448,7 +437,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "2. Don't insult (mute/ban 1-7 day)");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "3. Don't use bots (perma ban)");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "4. Don't self-kill (same as farming)");
-		return;
 	}
 	else if (!strcmp(Msg->m_pMessage, "/heart"))
 	{
@@ -464,7 +452,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		m_pPlayer->m_ActivesLife = false;
 		m_pPlayer->m_LifeActives = false;
 		new CLifeHearth(&GameServer()->m_World, vec2(0, 0), m_pPlayer->GetCID());
-		return;
 	}
 	else if (!strcmp(Msg->m_pMessage, "/jump"))
 	{
@@ -478,7 +465,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		m_pPlayer->m_JumpsShop++;
 		m_pPlayer->m_Score -= 3;
 		GameServer()->GetPlayerChar(m_pPlayer->GetCID())->m_Core.m_Jumps += 1;
-		return;
 	}
 	else if (!strcmp(Msg->m_pMessage, "/range"))
 	{
@@ -493,7 +479,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Done!");
 		m_pPlayer->m_RangeShop = true;
 		m_pPlayer->m_Score -= 10;
-		return;
 	}
 	else if (!strncmp(Msg->m_pMessage, "/prefix", 7) && m_pPlayer->m_AccData.m_UserID &&
 		(GameServer()->Server()->IsAuthed(m_pPlayer->GetCID()) || m_pPlayer->m_AccData.m_PlayerState == 2 || m_pPlayer->m_AccData.m_UserID == g_Config.m_SvOwnerAccID))
@@ -503,9 +488,8 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		m_pPlayer->m_Prefix ^= true;
 		str_format(aBuf, sizeof(aBuf), "Your Prefix %s", m_pPlayer->m_Prefix ? "enable" : "disable");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf);
-		return;
 	}
-	else if (!strncmp(Msg->m_pMessage, "/w", 3))
+	else if (!strncmp(Msg->m_pMessage, "/w", 2))
 	{
 		LastChat();
 		int id;
@@ -516,9 +500,8 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		char pLsMsg[128];
 		str_copy(pLsMsg, Msg->m_pMessage + 5, 128);
 		GameServer()->SendPM(m_pPlayer->GetCID(), cid2, pLsMsg);
-		return;
 	}
-	else if (!strncmp(Msg->m_pMessage, "/freeze", 6) && (m_pPlayer->m_AccData.m_PlayerState == 1 || GameServer()->Server()->IsAuthed(m_pPlayer->GetCID())))
+	else if (!strncmp(Msg->m_pMessage, "/freeze", 7) && (m_pPlayer->m_AccData.m_PlayerState == 1 || GameServer()->Server()->IsAuthed(m_pPlayer->GetCID())))
 	{
 		LastChat();
 		int id;
@@ -539,7 +522,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		str_format(buf, sizeof(buf), "Your account %s police '%s'", GameServer()->m_apPlayers[cid2]->m_AccData.m_Freeze ? "Freeze":"Unfreeze", GameServer()->Server()->ClientName(m_pPlayer->GetCID()));
 		GameServer()->SendChatTarget(cid2, buf);
 		dbg_msg("police", "Police '%s' freeze acc player '%s' login '%s'", GameServer()->Server()->ClientName(m_pPlayer->GetCID()), GameServer()->Server()->ClientName(cid2), GameServer()->m_apPlayers[cid2]->m_AccData.m_Username);
-		return;
 	}
 	else if (!strncmp(Msg->m_pMessage, "/kick", 5) && m_pPlayer->m_AccData.m_PlayerState == 1)
 	{
@@ -556,7 +538,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		GameServer()->SendChatTarget(-1, buf);
 
 		GameServer()->Server()->Kick(cid2, "You was kicked by the Police!");
-		return;
 	}
 	else if (!strncmp(Msg->m_pMessage, "/setgroup", 9) && GameServer()->Server()->IsAuthed(m_pPlayer->GetCID()))
 	{
@@ -593,7 +574,6 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 				str_format(aBuf, sizeof(aBuf), "Your group set %s!", gname[GameServer()->m_apPlayers[cid2]->m_AccData.m_PlayerState]);
 				GameServer()->SendChatTarget(cid2, aBuf); break;
 		}
-		return;
 	}
 
 	if(!strncmp(Msg->m_pMessage, "/", 1))
