@@ -94,7 +94,7 @@ void runServer()
 	[window makeKeyAndOrderFront: nil];
 
 	[view listenTo: task];
-	[task setLaunchPath: [mainBundle pathForAuxiliaryExecutable: @"DDNet-Server"]];
+	[task setLaunchPath: [mainBundle pathForAuxiliaryExecutable: @"xPanic-Server"]];
 	[task setArguments: arguments];
 	[task launch];
 	[NSApp run];

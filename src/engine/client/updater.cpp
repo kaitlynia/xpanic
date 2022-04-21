@@ -124,9 +124,9 @@ void CUpdater::ReplaceClient()
 	//Replace running executable by renaming twice...
 	if(!m_IsWinXP)
 	{
-		m_pStorage->RemoveBinaryFile("DDNet.old");
-		m_pStorage->RenameBinaryFile(PLAT_CLIENT_EXEC, "DDNet.old");
-		m_pStorage->RenameBinaryFile("DDNet.tmp", PLAT_CLIENT_EXEC);
+		m_pStorage->RemoveBinaryFile("xPanic.old");
+		m_pStorage->RenameBinaryFile(PLAT_CLIENT_EXEC, "xPanic.old");
+		m_pStorage->RenameBinaryFile("xPanic.tmp", PLAT_CLIENT_EXEC);
 	}
 	#if !defined(CONF_FAMILY_WINDOWS)
 		char aPath[512];
@@ -143,9 +143,9 @@ void CUpdater::ReplaceServer()
 	dbg_msg("updater", "Replacing " PLAT_SERVER_EXEC);
 
 	//Replace running executable by renaming twice...
-	m_pStorage->RemoveBinaryFile("DDNet-Server.old");
-	m_pStorage->RenameBinaryFile(PLAT_SERVER_EXEC, "DDNet-Server.old");
-	m_pStorage->RenameBinaryFile("DDNet-Server.tmp", PLAT_SERVER_EXEC);
+	m_pStorage->RemoveBinaryFile("xPanic-Server.old");
+	m_pStorage->RenameBinaryFile(PLAT_SERVER_EXEC, "xPanic-Server.old");
+	m_pStorage->RenameBinaryFile("xPanic-Server.tmp", PLAT_SERVER_EXEC);
 	#if !defined(CONF_FAMILY_WINDOWS)
 		char aPath[512];
 		m_pStorage->GetBinaryPath(PLAT_SERVER_EXEC, aPath, sizeof aPath);
@@ -233,9 +233,9 @@ void CUpdater::PerformUpdate()
 		m_RemovedFiles.pop_back();
 	}
 	if(m_ServerUpdate)
-		FetchFile(PLAT_SERVER_DOWN, "DDNet-Server.tmp");
+		FetchFile(PLAT_SERVER_DOWN, "xPanic-Server.tmp");
 	if(m_ClientUpdate)
-		FetchFile(PLAT_CLIENT_DOWN, "DDNet.tmp");
+		FetchFile(PLAT_CLIENT_DOWN, "xPanic.tmp");
 }
 
 void CUpdater::WinXpRestart()
@@ -245,7 +245,7 @@ void CUpdater::WinXpRestart()
 		if(!bhFile)
 			return;
 		char bBuf[512];
-		str_format(bBuf, sizeof(bBuf), ":_R\r\ndel \"DDNet.exe\"\r\nif exist \"DDNet.exe\" goto _R\r\nrename \"DDNet.tmp\" \"DDNet.exe\"\r\n:_T\r\nif not exist \"DDNet.exe\" goto _T\r\nstart DDNet.exe\r\ndel \"du.bat\"\r\n");
+		str_format(bBuf, sizeof(bBuf), ":_R\r\ndel \"xPanic.exe\"\r\nif exist \"xPanic.exe\" goto _R\r\nrename \"xPanic.tmp\" \"xPanic.exe\"\r\n:_T\r\nif not exist \"xPanic.exe\" goto _T\r\nstart xPanic.exe\r\ndel \"du.bat\"\r\n");
 		io_write(bhFile, bBuf, str_length(bBuf));
 		io_close(bhFile);
 		shell_execute(aBuf);
