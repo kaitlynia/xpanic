@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      
+
       - name: Install bam
         run: sudo apt install bam=0.4.0-5
 
