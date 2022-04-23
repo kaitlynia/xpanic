@@ -1,4 +1,4 @@
-# xpanic
+# xPanic
 
 This xPanic remake was originally maintained by [@kurosio](https://github.com/kurosio) but the source is over 2 years old and does not compile. This repository is an effort to fix, maintain, and revitalize the game mode.
 
@@ -14,4 +14,4 @@ NOTE: The source in this repository is based on a 2016 commit that *did* compile
 1. Create an `accounts/` directory (This step is extremely important!)
 2. Create an `autoexec_server.cfg` file. An example file is provided as a reference.
 **DO NOT JUST COPY AND PASTE THE CONTENTS! CARE MUST BE TAKEN TO REPLACE THE VALUES IN ALL CAPS.**
-3. Execute the `DDNet-Server` binary file
+3. Execute the `xPanic-Server` binary file
