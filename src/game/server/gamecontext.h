@@ -281,6 +281,7 @@ public:
 	CSql *m_pDatabase;
 	void Register(const char *Username, const char *Password, int ClientID); // Register account
 	void Login(const char *Username, const char *Password, int ClientID); // Login account
+	void Apply(const char *Username, const char *Password, int ClientID); // Apply account
 };
 
 class CQueryBase : public CQuery
@@ -299,6 +300,13 @@ public:
 };
 
 class CQueryLogin: public CQueryBase
+{
+	void OnData();
+public:
+
+};
+
+class CQueryApply: public CQueryBase
 {
 	void OnData();
 public:

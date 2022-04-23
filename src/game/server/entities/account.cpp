@@ -38,7 +38,7 @@ bool CAccount::Exists(const char *Username)
 
 void CAccount::Apply()
 {
-
+	GameServer()->Apply(m_pPlayer->m_AccData.m_Username, m_pPlayer->m_AccData.m_Password, m_pPlayer->GetCID());
 }
 
 void CAccount::Reset()

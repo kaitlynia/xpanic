@@ -1,7 +1,7 @@
 /* (c) GutZuFusss. See licence.txt in the root of the distribution for more information.     */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include "db_sqlite3.h"
-
+#include "gamecontext.h"
 
 bool CQuery::Next()
 {
@@ -99,8 +99,9 @@ CQuery *CSql::Query(CQuery *pQuery, std::string QueryString)
     return pQuery;
 }
 
-CSql::CSql()
+CSql::CSql(class CGameContext *pGameServer)
 {
+    m_pGameServer = pGameServer;
 	/*CALL_STACK_ADD();*/
 
     int rc = sqlite3_open("Accounts.db", &m_pDB);
@@ -223,31 +224,51 @@ void CSql::Apply(const char *Username, const char *Password, int ClientID)
         return;
     }
 
-    char pQuery[555];
+    char pQuery[700];
     
-    str_format(pQuery, sizeof(pQuery), (char *)"UPDATE Account SET" \
-		"Exp='%d'," \
-        "Level='%d'," \
-        "Money='%d'," \
-        "Dmg='%d'," \
-        "Health='%d'," \
-        "Ammoregen='%d'," \
-        "Handle='%d'," \
-        "Ammo='%d'," \
-        "PlayerState='%d'," \
-        "TurretMoney='%d'," \
-        "TurretLevel='%d'," \
-        "TurretExp='%d'," \
-        "TurretDmg='%d'," \
-        "TurretSpeed='%d'," \
-        "TurretAmmo='%d'," \
-        "TurretShotgun='%d'," \
-        "TurretRange='%d'," \
-        "Freeze='%d'," \
-        "Winner='%d'," \
-		"Luser='%d' WHERE" \
-        "Username='%s';", 
-        Username);
+    str_format(pQuery, sizeof(pQuery), (char *)"UPDATE Accounts SET" \
+        "Exp=%d," \
+        "Level=%d," \
+        "Money=%d," \
+        "Dmg=%d," \
+        "Health=%d," \
+        "Ammoregen=%d," \
+        "Handle=%d," \
+        "Ammo=%d," \
+        "PlayerState=%d," \
+        "TurretMoney=%d," \
+        "TurretLevel=%d," \
+        "TurretExp=%d," \
+        "TurretDmg=%d," \
+        "TurretSpeed=%d," \
+        "TurretAmmo=%d," \
+        "TurretShotgun=%d," \
+        "TurretRange=%d," \
+        "Freeze=%d," \
+        "Winner=%d," \
+		"Luser=%d " \
+        "WHERE Username='%s';", \
+        m_pGameServer->m_apPlayers[ClientID]->m_AccData.m_Exp, \
+        m_pGameServer->m_apPlayers[ClientID]->m_AccData.m_Level, \
+        m_pGameServer->m_apPlayers[ClientID]->m_AccData.m_Money, \
+        m_pGameServer->m_apPlayers[ClientID]->m_AccData.m_Dmg, \
+        m_pGameServer->m_apPlayers[ClientID]->m_AccData.m_Health, \
+        m_pGameServer->m_apPlayers[ClientID]->m_AccData.m_Ammoregen, \
+        m_pGameServer->m_apPlayers[ClientID]->m_AccData.m_Handle, \
+        m_pGameServer->m_apPlayers[ClientID]->m_AccData.m_Ammo, \
+        m_pGameServer->m_apPlayers[ClientID]->m_AccData.m_PlayerState, \
+        m_pGameServer->m_apPlayers[ClientID]->m_AccData.m_TurretMoney, \
+        m_pGameServer->m_apPlayers[ClientID]->m_AccData.m_TurretLevel, \
+        m_pGameServer->m_apPlayers[ClientID]->m_AccData.m_TurretExp, \
+        m_pGameServer->m_apPlayers[ClientID]->m_AccData.m_TurretDmg, \
+        m_pGameServer->m_apPlayers[ClientID]->m_AccData.m_TurretSpeed, \
+        m_pGameServer->m_apPlayers[ClientID]->m_AccData.m_TurretAmmo, \
+        m_pGameServer->m_apPlayers[ClientID]->m_AccData.m_TurretShotgun, \
+        m_pGameServer->m_apPlayers[ClientID]->m_AccData.m_TurretRange, \
+        m_pGameServer->m_apPlayers[ClientID]->m_AccData.m_Freeze, \
+        m_pGameServer->m_apPlayers[ClientID]->m_AccData.m_Winner, \
+        m_pGameServer->m_apPlayers[ClientID]->m_AccData.m_Luser, \
+        m_pGameServer->m_apPlayers[ClientID]->m_AccData.m_Username);
 
     char *pErrorMsg;
     sqlite3_exec(m_pDB, pQuery, NULL, NULL, &pErrorMsg);

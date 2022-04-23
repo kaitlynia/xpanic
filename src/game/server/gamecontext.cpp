@@ -89,6 +89,41 @@ void CQueryLogin::OnData()
 	}
 }
 
+void CQueryApply::OnData()
+{
+	CPlayer *P = m_pGameServer->m_apPlayers[m_ClientID];
+	try
+	{
+		//dbg_msg("BUG","THIS:%d", m_pGameServer->m_pDatabase->m_Tmp.m_Exp[m_ClientID]);
+		/*m_pGameServer->m_pDatabase->m_Tmp.m_Exp[m_ClientID] = P->m_AccData.m_Exp;
+    	m_pDatabase->m_Tmp.m_Level[m_ClientID] = P->m_AccData.m_Level;
+    	m_pDatabase->m_Tmp.m_Money[m_ClientID] = P->m_AccData.m_Money;
+    	m_pDatabase->m_Tmp.m_Dmg[m_ClientID] = P->m_AccData.m_Dmg;
+    	m_pDatabase->m_Tmp.m_Health[m_ClientID] = P->m_AccData.m_Health;
+    	m_pDatabase->m_Tmp.m_Ammoregen[m_ClientID] = P->m_AccData.m_Ammoregen;
+    	m_pDatabase->m_Tmp.m_Handle[m_ClientID] = P->m_AccData.m_Handle;
+    	m_pDatabase->m_Tmp.m_Ammo[m_ClientID] = P->m_AccData.m_Ammo;
+    	m_pDatabase->m_Tmp.m_PlayerState[m_ClientID] = P->m_AccData.m_PlayerState;
+    	m_pDatabase->m_Tmp.m_TurretMoney[m_ClientID] = P->m_AccData.m_TurretMoney;
+    	m_pDatabase->m_Tmp.m_TurretLevel[m_ClientID] = P->m_AccData.m_TurretLevel;
+    	m_pDatabase->m_Tmp.m_TurretExp[m_ClientID] = P->m_AccData.m_TurretExp;
+    	m_pDatabase->m_Tmp.m_TurretDmg[m_ClientID] = P->m_AccData.m_TurretDmg;
+    	m_pDatabase->m_Tmp.m_TurretSpeed[m_ClientID] = P->m_AccData.m_TurretSpeed;
+    	m_pDatabase->m_Tmp.m_TurretAmmo[m_ClientID] = P->m_AccData.m_TurretAmmo;
+    	m_pDatabase->m_Tmp.m_TurretShotgun[m_ClientID] = P->m_AccData.m_TurretShotgun;
+    	m_pDatabase->m_Tmp.m_TurretRange[m_ClientID] = P->m_AccData.m_TurretRange;
+    	m_pDatabase->m_Tmp.m_Freeze[m_ClientID] = P->m_AccData.m_Freeze;
+    	m_pDatabase->m_Tmp.m_Winner[m_ClientID] = P->m_AccData.m_Winner;
+    	m_pDatabase->m_Tmp.m_Luser[m_ClientID] = P->m_AccData.m_Luser;*/
+	}
+	catch(const std::exception& e)
+	{
+		dbg_msg("BUG","THIS:%d", e);
+	}
+
+	m_pDatabase->Apply(Username, Password, m_ClientID);
+}
+
 enum
 {
 	RESET,
@@ -118,7 +153,7 @@ void CGameContext::Construct(int Resetting)
 	m_ChatResponseTargetID = -1;
 	m_aDeleteTempfile[0] = 0;
 
-	m_pDatabase = new CSql();
+	m_pDatabase = new CSql(this);
 }
 
 CGameContext::CGameContext(int Resetting){
@@ -2460,6 +2495,18 @@ void CGameContext::Login(const char *Username, const char *Password, int ClientI
 {
 	char *pQueryBuf = sqlite3_mprintf("SELECT * FROM Accounts WHERE Username='%q'", Username);
 	CQueryLogin *pQuery = new CQueryLogin();
+	pQuery->Username = Username;
+	pQuery->Password = Password;
+	pQuery->m_ClientID = ClientID;
+	pQuery->m_pGameServer = this;
+	pQuery->Query(m_pDatabase, pQueryBuf);
+	sqlite3_free(pQueryBuf);
+}
+
+void CGameContext::Apply(const char *Username, const char *Password, int ClientID)
+{
+	char *pQueryBuf = sqlite3_mprintf("SELECT * FROM Accounts WHERE Username='%q'", Username);
+	CQueryApply *pQuery = new CQueryApply();
 	pQuery->Username = Username;
 	pQuery->Password = Password;
 	pQuery->m_ClientID = ClientID;

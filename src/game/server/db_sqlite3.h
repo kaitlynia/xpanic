@@ -38,6 +38,9 @@ public:
 
 class CSql
 {
+    class CGameContext *m_pGameServer;
+protected:
+    CGameContext *GameServer() const { return m_pGameServer; }
 private:
     void WorkerThread();
     static void InitWorker(void *pSelf);
@@ -50,7 +53,7 @@ private:
     sqlite3 *m_pDB;
 
 public:
-    CSql();
+    CSql(class CGameContext *pGameServer);
     ~CSql();
     CQuery *Query(CQuery *pQuery, std::string QueryString);
 
@@ -58,7 +61,7 @@ public:
     bool Login(const char *Username, const char *Password, int ClientID);
     void Apply(const char *Username, const char *Password, int ClientID);
 
-    struct
+    /*struct
 	{
 		int m_UserID[MAX_CLIENTS];
 		char m_Username[MAX_CLIENTS][32];
@@ -87,7 +90,7 @@ public:
 		int m_Freeze[MAX_CLIENTS];
 		int m_Winner[MAX_CLIENTS];
 		int m_Luser[MAX_CLIENTS];
-	} m_AccData;
+	} m_Tmp;*/
 };
 
 
