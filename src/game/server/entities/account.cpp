@@ -108,19 +108,7 @@ void CAccount::Register(char *Username, char *Password)
 	char aBuf[125];
 	if(m_pPlayer->m_AccData.m_UserID)
 		return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Already logged in");
-	
-	if(Exists(Username))
-		return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Account already exists.");
-
-	char Filter[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.-_";
-	char *p = strpbrk(Username, Filter);
-	if(!p)
-	{
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Don't use invalid chars for username!");
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "A - Z, a - z, 0 - 9, . - _");
-		return;
-	}
-	
+/*	
 	str_format(aBuf, sizeof(aBuf), "accounts/%s.acc", Username);
 
 	FILE *Accfile;
@@ -157,17 +145,9 @@ void CAccount::Register(char *Username, char *Password)
 
 	fputs(aBuf, Accfile);
 	fclose(Accfile);
-
-	Login(Username, Password);
-	
-	GameServer()->SendChatTarget(m_pPlayer->GetCID(), "~~~~~~~~ ! Registered ! ~~~~~~~~");
-	str_format(aBuf, sizeof(aBuf), "Login: %s", Username);
-	GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf);
-	str_format(aBuf, sizeof(aBuf), "Password: %s", Password);
-	GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf);
-	str_format(aBuf, sizeof(aBuf), "Now use the /login %s %s", Username, Password);
-	GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf);
-	GameServer()->SendChatTarget(m_pPlayer->GetCID(), "~~~~~~~~ ! Registered ! ~~~~~~~~");
+*/
+	GameServer()->Register(Username, Password, m_pPlayer->GetCID());
+//	Login(Username, Password);
 }
 
 bool CAccount::Exists(const char *Username)

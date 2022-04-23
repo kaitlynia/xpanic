@@ -20,7 +20,58 @@
 #include <string.h>
 
 #include <teeothers/components/localization.h>
- 
+
+void CQueryRegister::OnData()
+{
+	if(Next())
+	{
+		if(m_pGameServer->CheckAccount(Username))
+		{
+			m_pGameServer->SendChatTarget(m_ClientID, _("Account already exists."));
+		}
+		else
+		{
+			if(m_pDatabase->Register(Username, Password, m_ClientID))
+			{
+				char aBuf[256];
+				m_pGameServer->SendChatTarget(m_ClientID, "~~~~~~~~ ! Registered ! ~~~~~~~~");
+				str_format(aBuf, sizeof(aBuf), "Login: %s", Username);
+				m_pGameServer->SendChatTarget(m_ClientID, aBuf);
+				str_format(aBuf, sizeof(aBuf), "Password: %s", Password);
+				m_pGameServer->SendChatTarget(m_ClientID, aBuf);
+				str_format(aBuf, sizeof(aBuf), "Now use the /login %s %s", Username, Password);
+				m_pGameServer->SendChatTarget(m_ClientID, aBuf);
+				m_pGameServer->SendChatTarget(m_ClientID, "~~~~~~~~ ! Registered ! ~~~~~~~~");
+			}
+		}
+	}
+}
+
+void CQueryCheckAccount::OnData()
+{
+	if(Next())
+	{
+		Pass = false;
+		return;
+	}
+	Pass = true;
+}
+
+void CQueryLogin::OnData()
+{
+	m_pGameServer->SendChatTarget(m_ClientID, "~~~ Your top 5 ranks ~~~~");
+
+	int i = 0;
+	char aBuf[512];
+	while(Next())
+	{
+		i++;
+		int Time = GetInt(GetID("Time"));
+		str_format(aBuf, sizeof(aBuf), "%d.: %dm%ds (%d kills)", i, Time/60, Time%60, GetInt(GetID("Kills")));
+		m_pGameServer->SendChatTarget(m_ClientID, aBuf);
+	}
+}
+
 enum
 {
 	RESET,
@@ -2372,4 +2423,39 @@ void CGameContext::ResetTuning()
 	Tuning()->Set("shotgun_speeddiff", 0);
 	Tuning()->Set("shotgun_curvature", 0);
 	SendTuningParams(-1);
+}
+
+void CGameContext::Register(const char *Username, const char *Password, int ClientID)
+{
+	char *pQueryBuf = sqlite3_mprintf("SELECT * FROM Accounts WHERE Username='%q'", Username);
+	CQueryRegister *pQuery = new CQueryRegister();
+	pQuery->Username = Username;
+	pQuery->Password = Password;
+	pQuery->m_ClientID = ClientID;
+	pQuery->m_pGameServer = this;
+	pQuery->Query(m_pDatabase, pQueryBuf);
+	sqlite3_free(pQueryBuf);
+}
+
+void CGameContext::Login(const char *Username, const char *Password, int ClientID)
+{
+	char *pQueryBuf = sqlite3_mprintf("SELECT * FROM Accounts WHERE Username='%q'", Username);
+	CQueryLogin *pQuery = new CQueryLogin();
+	pQuery->Username = Username;
+	pQuery->Password = Password;
+	pQuery->m_ClientID = ClientID;
+	pQuery->m_pGameServer = this;
+	pQuery->Query(m_pDatabase, pQueryBuf);
+	sqlite3_free(pQueryBuf);
+}
+
+bool CGameContext::CheckAccount(const char *Username)
+{
+	char *pQueryBuf = sqlite3_mprintf("SELECT * FROM Accounts WHERE Username='%q'", Username);
+	CQueryCheckAccount *pQuery = new CQueryCheckAccount();
+	pQuery->m_pGameServer = this;
+	pQuery->Query(m_pDatabase, pQueryBuf);
+	sqlite3_free(pQueryBuf);
+
+	return pQuery->Pass;
 }

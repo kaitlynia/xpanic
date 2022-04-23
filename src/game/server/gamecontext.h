@@ -15,6 +15,8 @@
 #include "gameworld.h"
 #include "player.h"
 
+#include "db_sqlite3.h"
+
 #ifdef _MSC_VER
 typedef __int32 int32_t;
 typedef unsigned __int32 uint32_t;
@@ -274,6 +276,42 @@ public:
 
 	int m_ChatResponseTargetID;
 	int m_ChatPrintCBIndex;
+	
+	// - SQL
+	CSql *m_pDatabase;
+	void Register(const char *Username, const char *Password, int ClientID); // Register account
+	bool CheckAccount(const char *Username); // Check account exist
+	void Login(const char *Username, const char *Password, int ClientID); // Login account
+};
+
+class CQueryBase : public CQuery
+{
+public:
+	int m_ClientID;
+	const char *Username;
+	const char *Password;
+	CGameContext *m_pGameServer;
+};
+
+class CQueryRegister: public CQueryBase
+{
+	void OnData();
+public:
+};
+
+// Check account exist
+class CQueryCheckAccount: public CQueryBase
+{
+	void OnData();
+public:
+	bool Pass;
+};
+
+class CQueryLogin: public CQueryBase
+{
+	void OnData();
+public:
+
 };
 
 inline int64_t CmaskAll() { return -1LL; }
