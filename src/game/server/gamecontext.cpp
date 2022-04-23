@@ -23,26 +23,23 @@
 
 void CQueryRegister::OnData()
 {
-	if(Next())
+	if(m_pGameServer->CheckAccount(Username))
 	{
-		if(m_pGameServer->CheckAccount(Username))
+		m_pGameServer->SendChatTarget(m_ClientID, _("Account already exists."));
+	}
+	else
+	{
+		if(m_pDatabase->Register(Username, Password, m_ClientID))
 		{
-			m_pGameServer->SendChatTarget(m_ClientID, _("Account already exists."));
-		}
-		else
-		{
-			if(m_pDatabase->Register(Username, Password, m_ClientID))
-			{
-				char aBuf[256];
-				m_pGameServer->SendChatTarget(m_ClientID, "~~~~~~~~ ! Registered ! ~~~~~~~~");
-				str_format(aBuf, sizeof(aBuf), "Login: %s", Username);
-				m_pGameServer->SendChatTarget(m_ClientID, aBuf);
-				str_format(aBuf, sizeof(aBuf), "Password: %s", Password);
-				m_pGameServer->SendChatTarget(m_ClientID, aBuf);
-				str_format(aBuf, sizeof(aBuf), "Now use the /login %s %s", Username, Password);
-				m_pGameServer->SendChatTarget(m_ClientID, aBuf);
-				m_pGameServer->SendChatTarget(m_ClientID, "~~~~~~~~ ! Registered ! ~~~~~~~~");
-			}
+			char aBuf[256];
+			m_pGameServer->SendChatTarget(m_ClientID, "~~~~~~~~ ! Registered ! ~~~~~~~~");
+			str_format(aBuf, sizeof(aBuf), "Login: %s", Username);
+			m_pGameServer->SendChatTarget(m_ClientID, aBuf);
+			str_format(aBuf, sizeof(aBuf), "Password: %s", Password);
+			m_pGameServer->SendChatTarget(m_ClientID, aBuf);
+			str_format(aBuf, sizeof(aBuf), "Now use the /login %s %s", Username, Password);
+			m_pGameServer->SendChatTarget(m_ClientID, aBuf);
+			m_pGameServer->SendChatTarget(m_ClientID, "~~~~~~~~ ! Registered ! ~~~~~~~~");
 		}
 	}
 }
@@ -100,6 +97,8 @@ void CGameContext::Construct(int Resetting)
 	}
 	m_ChatResponseTargetID = -1;
 	m_aDeleteTempfile[0] = 0;
+
+	m_pDatabase = new CSql();
 }
 
 CGameContext::CGameContext(int Resetting){

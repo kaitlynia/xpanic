@@ -2,6 +2,7 @@
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include "db_sqlite3.h"
 
+
 bool CQuery::Next()
 {
 	/*CALL_STACK_ADD();*/
@@ -109,7 +110,7 @@ CSql::CSql()
         sqlite3_close(m_pDB);
     }
 
-	char *pQuery = (char *)"CREATE TABLE IF NOT EXISTS Account (" \
+	char *pQuery = (char *)"CREATE TABLE IF NOT EXISTS Accounts (" \
 		"ID INTEGER					PRIMARY KEY		AUTOINCREMENT," \
         "Username                   TEXT            NOT NULL," \
         "Password                   TEXT            NOT NULL," \
@@ -169,13 +170,14 @@ bool CSql::Register(const char *Username, const char *Password, int ClientID)
 
     char pQuery[555];
     
-    str_format(pQuery, sizeof(pQuery), (char *)"INSERT INTO Account(" \
+    str_format(pQuery, sizeof(pQuery), (char *)"INSERT INTO Accounts(" \
 		"Username, " \
         "Password) " \
         "VALUES ('%s', '%s');", 
         Username, Password);
 
-    sqlite3_exec(m_pDB, pQuery, 0, 0, 0);
+    char *pErrorMsg;
+    sqlite3_exec(m_pDB, pQuery, NULL, NULL, &pErrorMsg);
 
     m_Lock = lock_create();
     m_Running = true;
@@ -195,7 +197,7 @@ void CSql::Login(const char *Username, const char *Password, int ClientID)
 
     char pQuery[555];
     
-    str_format(pQuery, sizeof(pQuery), (char *)"INSERT INTO Account(" \
+    str_format(pQuery, sizeof(pQuery), (char *)"INSERT INTO Accounts(" \
 		"Username, " \
         "Password) " \
         "VALUES ('%s', '%s');", 

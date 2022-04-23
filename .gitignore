@@ -1,5 +1,5 @@
 # xPanic-specific files
-/DDNet-Server
+/xPanic-Server*
 /accounts/
 /autoexec_server.cfg
 /autoexec_server.log
