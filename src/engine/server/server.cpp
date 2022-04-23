@@ -27,6 +27,13 @@
 
 #include <mastersrv/mastersrv.h>
 
+#include <teeothers/components/localization.h>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <algorithm>
+#include <cstring>
+
 // DDRace
 #include <string.h>
 #include <vector>
@@ -2120,6 +2127,14 @@ int main(int argc, const char **argv) // ignore_convention
 	IEngineMasterServer *pEngineMasterServer = CreateEngineMasterServer();
 	IStorage *pStorage = CreateStorage("Teeworlds", IStorage::STORAGETYPE_SERVER, argc, argv); // ignore_convention
 	IConfig *pConfig = CreateConfig();
+
+	pServer->m_pLocalization = new CLocalization(pStorage);
+	pServer->m_pLocalization->InitConfig(0, NULL);
+	if(!pServer->m_pLocalization->Init())
+	{
+		dbg_msg("localization", "could not initialize localization");
+		return -1;
+	}
 
 	pServer->InitRegister(&pServer->m_NetServer, pEngineMasterServer, pConsole);
 

@@ -15,6 +15,8 @@
 #include "entities/cmds.h"
 #include <stdio.h>
 
+#include <teeothers/components/localization.h>
+
 MACRO_ALLOC_POOL_ID_IMPL(CPlayer, MAX_CLIENTS)
 
 IServer *CPlayer::Server() const { return m_pGameServer->Server(); }

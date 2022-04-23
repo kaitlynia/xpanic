@@ -150,6 +150,7 @@ MACRO_CONFIG_INT(SvVanillaAntiSpoof, sv_vanilla_antispoof, 1, 0, 1, CFGFLAG_SERV
 
 MACRO_CONFIG_STR(SvOwnerName, sv_name_owner, 16, "nope", CFGFLAG_SERVER, "Owner name")
 MACRO_CONFIG_STR(SvOwnerSkype, sv_owner_skype, 16, "nope", CFGFLAG_SERVER, "Skype name")
+MACRO_CONFIG_STR(SvLanguage, SvLanguage, 128, "en", CFGFLAG_SERVER, "Server language. (String)")
 
 MACRO_CONFIG_INT(SvPlayerDemoRecord, sv_player_demo_record, 0, 0, 1, CFGFLAG_SERVER, "Automatically record demos for each player")
 MACRO_CONFIG_INT(SvDemoChat, sv_demo_chat, 0, 0, 1, CFGFLAG_SERVER, "Record chat for demos")

@@ -18,6 +18,8 @@
 #include "gamemodes/DDRace.h"
 #include "entities/turret.h"
 #include <string.h>
+
+#include <teeothers/components/localization.h>
  
 enum
 {
@@ -230,16 +232,37 @@ void CGameContext::CallVote(int ClientID, const char *aDesc, const char *aCmd, c
 	pPlayer->m_LastVoteCall = Now;
 }
 
-void CGameContext::SendChatTarget(int To, const char *pText)
+void CGameContext::SendChatTarget(int To, const char *pText, ...)
 {
+	int Start = (To < 0 ? 0 : To);
+	int End = (To < 0 ? MAX_CLIENTS : To+1);
+	
+
 	CNetMsg_Sv_Chat Msg;
 	Msg.m_Team = 0;
 	Msg.m_ClientID = -1;
-	Msg.m_pMessage = pText;
-	if(g_Config.m_SvDemoChat)
-		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, To);
-	else
-		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL|MSGFLAG_NORECORD, To);
+	
+	dynamic_string Buffer;
+
+	va_list VarArgs;
+	va_start(VarArgs, pText);
+
+	for(int i = Start; i < End; i++)
+	{
+		if(m_apPlayers[i])
+		{
+			Buffer.clear();
+			Server()->Localization()->Format_VL(Buffer, g_Config.m_SvLanguage, pText, VarArgs);
+			
+			Msg.m_pMessage = Buffer.buffer();
+		
+			if(g_Config.m_SvDemoChat)
+				Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, i);
+			else
+				Server()->SendPackMsg(&Msg, MSGFLAG_VITAL|MSGFLAG_NORECORD, i);
+		}
+	}
+	va_end(VarArgs);
 }
 
 void CGameContext::SendChatTeam(int Team, const char *pText)
@@ -335,11 +358,29 @@ void CGameContext::SendWeaponPickup(int ClientID, int Weapon)
 }
 
 
-void CGameContext::SendBroadcast(const char *pText, int ClientID)
+void CGameContext::SendBroadcast(const char *pText, int To, ...)
 {
-	CNetMsg_Sv_Broadcast Msg;
-	Msg.m_pMessage = pText;
-	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, ClientID);
+	int Start = (To < 0 ? 0 : To);
+	int End = (To < 0 ? MAX_CLIENTS : To+1);
+	
+	dynamic_string Buffer;
+	
+	va_list VarArgs;
+	va_start(VarArgs, pText);
+	
+	for(int i = Start; i < End; i++)
+	{
+		if(m_apPlayers[i])
+		{
+			Buffer.clear();
+			Server()->Localization()->Format_VL(Buffer, g_Config.m_SvLanguage, pText, VarArgs);
+			CNetMsg_Sv_Broadcast Msg;
+			Msg.m_pMessage = Buffer.buffer();
+			Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, To);
+		}
+	}
+	
+	va_end(VarArgs);
 }
 
 void CGameContext::StartVote(const char *pDesc, const char *pCommand, const char *pReason)
@@ -1112,9 +1153,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			}
 			else
 			{
-				char aBuf[32];
-				str_format(aBuf, sizeof(aBuf), "Only %d active players are allowed", Server()->MaxClients()-g_Config.m_SvSpectatorSlots);
-				SendBroadcast(aBuf, ClientID);
+				SendBroadcast(_("Only {int:Num} active players are allowed"), ClientID, "Num", Server()->MaxClients()-g_Config.m_SvSpectatorSlots);
 			}
 		}
 		else if (MsgID == NETMSGTYPE_CL_ISDDNET)
@@ -1961,6 +2000,9 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 		}
 	}
 #endif
+
+	int Number = 1;
+	SendBroadcast(_("Test: {int:Num}"), -1, "Num", Number);
 }
 
 void CGameContext::DeleteTempfile()

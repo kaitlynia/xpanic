@@ -15,6 +15,7 @@
 #include "mine.h"
 #include "turret.h"
 
+#include <teeothers/components/localization.h>
 MACRO_ALLOC_POOL_ID_IMPL(CCharacter, MAX_CLIENTS)
 
 CCharacter::CCharacter(CGameWorld *pWorld)
@@ -521,9 +522,7 @@ void CCharacter::Tick()
 		ITickSecond--;
 		IhammerTick--;
 
-		char aBuf[26];
-		str_format(aBuf, sizeof(aBuf), "\n\n\n\n\n\n\n\n\n\n\n\n\nInvis: %d.%d", IhammerTick/Server()->TickSpeed() , ITickSecond*2);
-		GameServer()->SendBroadcast(aBuf, m_pPlayer->GetCID());
+		GameServer()->SendBroadcast(_("\n\n\n\n\n\n\n\n\n\n\n\n\nInvis: {int:Tick}.{int:Tick1}"), m_pPlayer->GetCID(), "Tick", IhammerTick/Server()->TickSpeed(), "Tick1", ITickSecond*2);
 		if (!IhammerTick)
 		{
 			GameServer()->SendBroadcast(" ", m_pPlayer->GetCID());
@@ -797,7 +796,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 
 	char aBuf[32];
 	str_format(aBuf, sizeof(aBuf), "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nHealth: %d", m_Health);
-	GameServer()->SendBroadcast(aBuf, m_pPlayer->GetCID());
+	GameServer()->SendBroadcast(_("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nHealth: {int:Health}"), m_pPlayer->GetCID(), "Health", m_Health);
 	return true;
 }
 

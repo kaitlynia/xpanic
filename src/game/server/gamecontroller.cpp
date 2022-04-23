@@ -13,6 +13,7 @@
 #include "entities/zdoor.h"
 #include <game/layers.h>
 
+#include <teeothers/components/localization.h>
 
 IGameController::IGameController(class CGameContext *pGameServer)
 {
@@ -589,7 +590,7 @@ void IGameController::ResetZ()
 		if (GameServer()->m_apPlayers[i])
 			GameServer()->m_apPlayers[i]->ResetZomb();
 	}
-	GameServer()->SendBroadcast("", -1);
+	GameServer()->SendBroadcast(_(""), -1);
 	ResetDoors();
 }
 

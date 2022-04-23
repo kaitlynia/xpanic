@@ -18,3 +18,7 @@ jobs:
 
       - name: Compile binary server file
         run: bam server_release
+
+      - name: Test running
+        run: |
+            ./xPanic-Server exec autoexec_server.cfg.example;sv_name GitHub Test xPanic Server;
