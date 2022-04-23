@@ -2001,9 +2001,6 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 		}
 	}
 #endif
-
-	int Number = 1;
-	SendBroadcast(_("Test: {int:Num}"), -1, "Num", &Number);
 }
 
 void CGameContext::DeleteTempfile()
