@@ -522,7 +522,9 @@ void CCharacter::Tick()
 		ITickSecond--;
 		IhammerTick--;
 
-		GameServer()->SendBroadcast(_("\n\n\n\n\n\n\n\n\n\n\n\n\nInvis: {int:Tick}.{int:Tick1}"), m_pPlayer->GetCID(), "Tick", IhammerTick/Server()->TickSpeed(), "Tick1", ITickSecond*2);
+		int Tick = IhammerTick/Server()->TickSpeed();
+		int Tick1 = ITickSecond*2;
+		GameServer()->SendBroadcast(_("\n\n\n\n\n\n\n\n\n\n\n\n\nInvis: {int:Tick}.{int:Tick1}"), m_pPlayer->GetCID(), "Tick", Tick, "Tick1", Tick1);
 		if (!IhammerTick)
 		{
 			GameServer()->SendBroadcast(" ", m_pPlayer->GetCID());
@@ -794,9 +796,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 	m_EmoteType = EMOTE_PAIN;
 	m_EmoteStop = Server()->Tick() + 500 * Server()->TickSpeed() / 1000;
 
-	char aBuf[32];
-	str_format(aBuf, sizeof(aBuf), "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nHealth: %d", m_Health);
-	GameServer()->SendBroadcast(_("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nHealth: {int:Health}"), m_pPlayer->GetCID(), "Health", m_Health);
+	GameServer()->SendBroadcast(_("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nHealth: {int:Health}"), m_pPlayer->GetCID(), "Health", &m_Health);
 	return true;
 }
 

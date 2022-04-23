@@ -616,7 +616,7 @@ void CLocalization::Format_V(dynamic_string& Buffer, const char* pLanguageCode, 
 						}
 						else if(str_comp_num("int:", pText+ParamTypeStart, 4) == 0)
 						{
-							int &Number = *((const int*) pVarArgValue);
+							int Number = *((const int*) pVarArgValue);
 							AppendNumber(Buffer, BufferIter, pLanguage, Number);
 						}
 						else if(str_comp_num("percent:", pText+ParamTypeStart, 4) == 0)

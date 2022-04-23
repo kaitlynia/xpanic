@@ -1153,7 +1153,8 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			}
 			else
 			{
-				SendBroadcast(_("Only {int:Num} active players are allowed"), ClientID, "Num", Server()->MaxClients()-g_Config.m_SvSpectatorSlots);
+				int Num = Server()->MaxClients()-g_Config.m_SvSpectatorSlots;
+				SendBroadcast(_("Only {int:Num} active players are allowed"), ClientID, "Num", &Num);
 			}
 		}
 		else if (MsgID == NETMSGTYPE_CL_ISDDNET)
@@ -2002,7 +2003,7 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 #endif
 
 	int Number = 1;
-	SendBroadcast(_("Test: {int:Num}"), -1, "Num", Number);
+	SendBroadcast(_("Test: {int:Num}"), -1, "Num", &Number);
 }
 
 void CGameContext::DeleteTempfile()
