@@ -186,24 +186,71 @@ bool CSql::Register(const char *Username, const char *Password, int ClientID)
     return true;
 }
 
-void CSql::Login(const char *Username, const char *Password, int ClientID)
+bool CSql::Login(const char *Username, const char *Password, int ClientID)
 {
     int rc = sqlite3_open("Accounts.db", &m_pDB);
     if (rc)
     {
         dbg_msg("SQLite", "can't open database");
         sqlite3_close(m_pDB);
+        return false;
     }
 
     char pQuery[555];
     
-    str_format(pQuery, sizeof(pQuery), (char *)"INSERT INTO Accounts(" \
-		"Username, " \
-        "Password) " \
-        "VALUES ('%s', '%s');", 
+    str_format(pQuery, sizeof(pQuery), (char *)"SELECT * FROM Accounts WHERE" \
+		"Username='%s' AND " \
+        "Password='%s';", 
         Username, Password);
 
-    sqlite3_exec(m_pDB, pQuery, 0, 0, 0);
+    char *pErrorMsg;
+    sqlite3_exec(m_pDB, pQuery, NULL, NULL, &pErrorMsg);
+
+    m_Lock = lock_create();
+    m_Running = true;
+    thread_init(InitWorker, this);
+
+    return true;
+}
+
+void CSql::Apply(const char *Username, const char *Password, int ClientID)
+{
+    int rc = sqlite3_open("Accounts.db", &m_pDB);
+    if (rc)
+    {
+        dbg_msg("SQLite", "can't open database");
+        sqlite3_close(m_pDB);
+        return;
+    }
+
+    char pQuery[555];
+    
+    str_format(pQuery, sizeof(pQuery), (char *)"UPDATE Account SET" \
+		"Exp='%d'," \
+        "Level='%d'," \
+        "Money='%d'," \
+        "Dmg='%d'," \
+        "Health='%d'," \
+        "Ammoregen='%d'," \
+        "Handle='%d'," \
+        "Ammo='%d'," \
+        "PlayerState='%d'," \
+        "TurretMoney='%d'," \
+        "TurretLevel='%d'," \
+        "TurretExp='%d'," \
+        "TurretDmg='%d'," \
+        "TurretSpeed='%d'," \
+        "TurretAmmo='%d'," \
+        "TurretShotgun='%d'," \
+        "TurretRange='%d'," \
+        "Freeze='%d'," \
+        "Winner='%d'," \
+		"Luser='%d' WHERE" \
+        "Username='%s';", 
+        Username);
+
+    char *pErrorMsg;
+    sqlite3_exec(m_pDB, pQuery, NULL, NULL, &pErrorMsg);
 
     m_Lock = lock_create();
     m_Running = true;

@@ -23,7 +23,7 @@
 
 void CQueryRegister::OnData()
 {
-	if(m_pGameServer->CheckAccount(Username))
+	if(Next())
 	{
 		m_pGameServer->SendChatTarget(m_ClientID, _("Account already exists."));
 	}
@@ -44,28 +44,48 @@ void CQueryRegister::OnData()
 	}
 }
 
-void CQueryCheckAccount::OnData()
+void CQueryLogin::OnData()
 {
 	if(Next())
 	{
-		Pass = false;
-		return;
+		if(m_pDatabase->Login(Username, Password, m_ClientID))
+		{
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_UserID = GetInt(GetID("ID"));
+			str_format(m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Username, sizeof(m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Username), GetText(GetID("Username")));
+			str_format(m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Password, sizeof(m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Password), GetText(GetID("Password")));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Exp = GetInt(GetID("Exp"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Level = GetInt(GetID("Level"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Money = GetInt(GetID("Money"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Dmg = GetInt(GetID("Dmg"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Health = GetInt(GetID("Health"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Ammoregen = GetInt(GetID("Ammoregen"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Handle = GetInt(GetID("Handle"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Ammo = GetInt(GetID("Ammo"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_PlayerState = GetInt(GetID("PlayerState"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_TurretMoney = GetInt(GetID("TurretMoney"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_TurretLevel = GetInt(GetID("TurretLevel"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_TurretExp = GetInt(GetID("TurretExp"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_TurretDmg = GetInt(GetID("TurretDmg"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_TurretSpeed = GetInt(GetID("TurretSpeed"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_TurretAmmo = GetInt(GetID("TurretAmmo"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_TurretShotgun = GetInt(GetID("TurretShotgun"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_TurretRange = GetInt(GetID("TurretRange"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Freeze = GetInt(GetID("Freeze"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Winner = GetInt(GetID("Winner"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Luser = GetInt(GetID("Luser"));
+			if (m_pGameServer->m_apPlayers[m_ClientID]->GetTeam() == TEAM_SPECTATORS)
+			{	
+				if (m_pGameServer->m_pController->ZombStarted() && m_pGameServer->m_pController->m_Warmup)
+					m_pGameServer->m_apPlayers[m_ClientID]->SetTeam(TEAM_RED);
+				else
+					m_pGameServer->m_apPlayers[m_ClientID]->SetTeam(TEAM_BLUE);
+			}
+			m_pGameServer->SendChatTarget(m_ClientID, "Successfully logged in! Have fun while playing!");
+		}
 	}
-	Pass = true;
-}
-
-void CQueryLogin::OnData()
-{
-	m_pGameServer->SendChatTarget(m_ClientID, "~~~ Your top 5 ranks ~~~~");
-
-	int i = 0;
-	char aBuf[512];
-	while(Next())
+	else
 	{
-		i++;
-		int Time = GetInt(GetID("Time"));
-		str_format(aBuf, sizeof(aBuf), "%d.: %dm%ds (%d kills)", i, Time/60, Time%60, GetInt(GetID("Kills")));
-		m_pGameServer->SendChatTarget(m_ClientID, aBuf);
+		m_pGameServer->SendChatTarget(m_ClientID, _("This account does not exist. Use /help"));
 	}
 }
 
@@ -2446,15 +2466,4 @@ void CGameContext::Login(const char *Username, const char *Password, int ClientI
 	pQuery->m_pGameServer = this;
 	pQuery->Query(m_pDatabase, pQueryBuf);
 	sqlite3_free(pQueryBuf);
-}
-
-bool CGameContext::CheckAccount(const char *Username)
-{
-	char *pQueryBuf = sqlite3_mprintf("SELECT * FROM Accounts WHERE Username='%q'", Username);
-	CQueryCheckAccount *pQuery = new CQueryCheckAccount();
-	pQuery->m_pGameServer = this;
-	pQuery->Query(m_pDatabase, pQueryBuf);
-	sqlite3_free(pQueryBuf);
-
-	return pQuery->Pass;
 }

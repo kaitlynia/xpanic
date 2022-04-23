@@ -33,9 +33,6 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 	m_pAccount = new CAccount(this, m_pGameServer);
 	m_pChatCmd = new CCmd(this, m_pGameServer);	
 	
-	if(m_AccData.m_UserID)
-		m_pAccount->Apply();
-	
 	Reset();
 }
 
@@ -111,8 +108,6 @@ void CPlayer::Tick()
 		m_AccData.m_Level++;
 		if (m_AccData.m_Exp < m_AccData.m_Level)
 		{
-			if (m_AccData.m_UserID)
-				m_pAccount->Apply();
 
 			char SendLVL[64];
 			str_format(SendLVL, sizeof(SendLVL), "Successfully! Your new level %d\n/ Upgrade counts %d", m_AccData.m_Level, m_AccData.m_Money);
