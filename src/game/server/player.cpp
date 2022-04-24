@@ -292,9 +292,6 @@ void CPlayer::FakeSnap(int SnappingClient)
 
 void CPlayer::OnDisconnect(const char *pReason)
 {
-	if(m_AccData.m_UserID)
-		m_pAccount->Reset();
-	
 	KillCharacter();
 
 	if(GameServer()->m_pController->NumZombs() == 1 && GetTeam() == TEAM_RED

@@ -13,7 +13,7 @@ public:
 
 	void Login(char *Username, char *Password);
 	void Register(char *Username, char *Password);
-	void Apply();
+	bool Apply();
 	void Reset();
 	void NewPassword(char *NewPassword);
 	bool Exists(const char * Username);

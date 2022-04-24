@@ -524,7 +524,7 @@ void CCharacter::Tick()
 
 		int Tick = IhammerTick/Server()->TickSpeed();
 		int Tick1 = ITickSecond*2;
-		GameServer()->SendBroadcast(_("\n\n\n\n\n\n\n\n\n\n\n\n\nInvis: {int:Tick}.{int:Tick1}"), m_pPlayer->GetCID(), "Tick", Tick, "Tick1", Tick1);
+		GameServer()->SendBroadcast(_("\n\n\n\n\n\n\n\n\n\n\n\n\nInvis: {int:Tick}.{int:Tick1}"), m_pPlayer->GetCID(), "Tick", &Tick, "Tick1", &Tick1);
 		if (!IhammerTick)
 		{
 			GameServer()->SendBroadcast(" ", m_pPlayer->GetCID());

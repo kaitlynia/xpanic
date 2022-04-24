@@ -48,8 +48,8 @@ void CQueryLogin::OnData()
 {
 	if(Next())
 	{
-		if(m_pDatabase->Login(Username, Password, m_ClientID))
-		{
+//		if(m_pDatabase->Login(Username, Password, m_ClientID))
+//		{
 			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_UserID = GetInt(GetID("ID"));
 			str_format(m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Username, sizeof(m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Username), GetText(GetID("Username")));
 			str_format(m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Password, sizeof(m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Password), GetText(GetID("Password")));
@@ -81,7 +81,7 @@ void CQueryLogin::OnData()
 					m_pGameServer->m_apPlayers[m_ClientID]->SetTeam(TEAM_BLUE);
 			}
 			m_pGameServer->SendChatTarget(m_ClientID, "Successfully logged in! Have fun while playing!");
-		}
+//		}
 	}
 	else
 	{
@@ -91,37 +91,32 @@ void CQueryLogin::OnData()
 
 void CQueryApply::OnData()
 {
-	CPlayer *P = m_pGameServer->m_apPlayers[m_ClientID];
-	try
+	if(Next())
 	{
-		//dbg_msg("BUG","THIS:%d", m_pGameServer->m_pDatabase->m_Tmp.m_Exp[m_ClientID]);
-		/*m_pGameServer->m_pDatabase->m_Tmp.m_Exp[m_ClientID] = P->m_AccData.m_Exp;
-    	m_pDatabase->m_Tmp.m_Level[m_ClientID] = P->m_AccData.m_Level;
-    	m_pDatabase->m_Tmp.m_Money[m_ClientID] = P->m_AccData.m_Money;
-    	m_pDatabase->m_Tmp.m_Dmg[m_ClientID] = P->m_AccData.m_Dmg;
-    	m_pDatabase->m_Tmp.m_Health[m_ClientID] = P->m_AccData.m_Health;
-    	m_pDatabase->m_Tmp.m_Ammoregen[m_ClientID] = P->m_AccData.m_Ammoregen;
-    	m_pDatabase->m_Tmp.m_Handle[m_ClientID] = P->m_AccData.m_Handle;
-    	m_pDatabase->m_Tmp.m_Ammo[m_ClientID] = P->m_AccData.m_Ammo;
-    	m_pDatabase->m_Tmp.m_PlayerState[m_ClientID] = P->m_AccData.m_PlayerState;
-    	m_pDatabase->m_Tmp.m_TurretMoney[m_ClientID] = P->m_AccData.m_TurretMoney;
-    	m_pDatabase->m_Tmp.m_TurretLevel[m_ClientID] = P->m_AccData.m_TurretLevel;
-    	m_pDatabase->m_Tmp.m_TurretExp[m_ClientID] = P->m_AccData.m_TurretExp;
-    	m_pDatabase->m_Tmp.m_TurretDmg[m_ClientID] = P->m_AccData.m_TurretDmg;
-    	m_pDatabase->m_Tmp.m_TurretSpeed[m_ClientID] = P->m_AccData.m_TurretSpeed;
-    	m_pDatabase->m_Tmp.m_TurretAmmo[m_ClientID] = P->m_AccData.m_TurretAmmo;
-    	m_pDatabase->m_Tmp.m_TurretShotgun[m_ClientID] = P->m_AccData.m_TurretShotgun;
-    	m_pDatabase->m_Tmp.m_TurretRange[m_ClientID] = P->m_AccData.m_TurretRange;
-    	m_pDatabase->m_Tmp.m_Freeze[m_ClientID] = P->m_AccData.m_Freeze;
-    	m_pDatabase->m_Tmp.m_Winner[m_ClientID] = P->m_AccData.m_Winner;
-    	m_pDatabase->m_Tmp.m_Luser[m_ClientID] = P->m_AccData.m_Luser;*/
+		dbg_msg("s","%d", m_Level);
+		
+		m_pDatabase->Apply(Username, Password, m_ClientID, 
+		m_Exp, 
+		m_Level, 
+		m_Money, 
+		m_Dmg,
+		m_Health, 
+		m_Ammoregen, 
+		m_Handle, 
+		m_Ammo, 
+		m_PlayerState, 
+		m_TurretMoney, 
+		m_TurretLevel, 
+		m_TurretExp, 
+		m_TurretDmg, 
+		m_TurretSpeed, 
+		m_TurretAmmo, 
+		m_TurretShotgun, 
+		m_TurretRange, 
+		m_Freeze, 
+		m_Winner, 
+		m_Luser);
 	}
-	catch(const std::exception& e)
-	{
-		dbg_msg("BUG","THIS:%d", e);
-	}
-
-	m_pDatabase->Apply(Username, Password, m_ClientID);
 }
 
 enum
@@ -153,7 +148,7 @@ void CGameContext::Construct(int Resetting)
 	m_ChatResponseTargetID = -1;
 	m_aDeleteTempfile[0] = 0;
 
-	m_pDatabase = new CSql(this);
+	m_pDatabase = new CSql();
 }
 
 CGameContext::CGameContext(int Resetting){
@@ -908,11 +903,17 @@ void CGameContext::OnClientConnected(int ClientID)
 void CGameContext::OnClientDrop(int ClientID, const char *pReason)
 {		
 	AbortVoteKickOnDisconnect(ClientID);
+	if(m_apPlayers[ClientID]->m_AccData.m_UserID)
+	{
+		if(m_apPlayers[ClientID]->m_pAccount->Apply())
+		{
+		}
+	}
+
 	m_apPlayers[ClientID]->OnDisconnect(pReason);
-	
 	delete m_apPlayers[ClientID];
 	m_apPlayers[ClientID] = 0;
-	
+
 	if(!m_pController->NumZombs() && m_pController->ZombStarted() && !m_pController->m_Warmup)
 		m_pController->RandomZomb(-2);
 	
@@ -2503,14 +2504,36 @@ void CGameContext::Login(const char *Username, const char *Password, int ClientI
 	sqlite3_free(pQueryBuf);
 }
 
-void CGameContext::Apply(const char *Username, const char *Password, int ClientID)
+bool CGameContext::Apply(const char *Username, const char *Password, int AccID, int m_PlayerState, int m_Level, int m_Exp, unsigned int m_Money, int m_Dmg, int m_Health, int m_Ammoregen, int m_Handle, int m_Ammo, unsigned int m_TurretMoney, int m_TurretLevel, int m_TurretExp, int m_TurretDmg, int m_TurretSpeed, int m_TurretAmmo, int m_TurretShotgun, int m_TurretRange, int m_Freeze, int m_Winner, int m_Luser)
 {
 	char *pQueryBuf = sqlite3_mprintf("SELECT * FROM Accounts WHERE Username='%q'", Username);
 	CQueryApply *pQuery = new CQueryApply();
 	pQuery->Username = Username;
 	pQuery->Password = Password;
-	pQuery->m_ClientID = ClientID;
+	pQuery->m_ClientID = AccID;
+	pQuery->m_PlayerState = m_PlayerState;
+	pQuery->m_Level = m_Level;
+	pQuery->m_Exp = m_Exp;
+	pQuery->m_Money = m_Money;
+	pQuery->m_Dmg = m_Dmg;
+	pQuery->m_Health = m_Health;
+	pQuery->m_Ammoregen = m_Ammoregen;
+	pQuery->m_Handle = m_Handle;
+	pQuery->m_Ammo = m_Ammo;
+	pQuery->m_TurretMoney = m_TurretMoney;
+	pQuery->m_TurretLevel = m_TurretLevel;
+	pQuery->m_TurretExp = m_TurretExp;
+	pQuery->m_TurretDmg = m_TurretDmg;
+	pQuery->m_TurretSpeed = m_TurretSpeed;
+	pQuery->m_TurretAmmo = m_TurretAmmo;
+	pQuery->m_TurretShotgun = m_TurretShotgun;
+	pQuery->m_TurretRange = m_TurretRange;
+	pQuery->m_Freeze = m_Freeze;
+	pQuery->m_Winner = m_Winner;
+	pQuery->m_Luser = m_Luser;
 	pQuery->m_pGameServer = this;
 	pQuery->Query(m_pDatabase, pQueryBuf);
 	sqlite3_free(pQueryBuf);
+
+	return true;
 }

@@ -281,7 +281,8 @@ public:
 	CSql *m_pDatabase;
 	void Register(const char *Username, const char *Password, int ClientID); // Register account
 	void Login(const char *Username, const char *Password, int ClientID); // Login account
-	void Apply(const char *Username, const char *Password, int ClientID); // Apply account
+	bool Apply(const char *Username, const char *Password, int AccID, 
+				int m_PlayerState, int m_Level, int m_Exp, unsigned int m_Money, int m_Dmg, int m_Health, int m_Ammoregen, int m_Handle, int m_Ammo, unsigned int m_TurretMoney, int m_TurretLevel, int m_TurretExp, int m_TurretDmg, int m_TurretSpeed, int m_TurretAmmo, int m_TurretShotgun, int m_TurretRange, int m_Freeze, int m_Winner, int m_Luser); // Apply account
 };
 
 class CQueryBase : public CQuery
@@ -310,7 +311,26 @@ class CQueryApply: public CQueryBase
 {
 	void OnData();
 public:
-
+	int m_PlayerState;
+	int m_Level;
+	int m_Exp; 
+	unsigned int m_Money;
+	int m_Dmg;
+	int m_Health;
+	int m_Ammoregen;
+	int m_Handle;
+	int m_Ammo; 
+	unsigned int m_TurretMoney;
+	int m_TurretLevel;
+	int m_TurretExp;
+	int m_TurretDmg;
+	int m_TurretSpeed;
+	int m_TurretAmmo;
+	int m_TurretShotgun;
+	int m_TurretRange;
+	int m_Freeze;
+	int m_Winner;
+	int m_Luser;
 };
 
 inline int64_t CmaskAll() { return -1LL; }
