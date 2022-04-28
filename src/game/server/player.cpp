@@ -32,7 +32,8 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 	
 	m_pAccount = new CAccount(this, m_pGameServer);
 	m_pChatCmd = new CCmd(this, m_pGameServer);	
-	
+	SetLanguage(Server()->GetClientLanguage(ClientID));
+
 	if(m_AccData.m_UserID)
 		m_pAccount->Apply();
 	
@@ -121,6 +122,7 @@ void CPlayer::Tick()
 	}
 	
 	Server()->SetClientScore(m_ClientID, m_Score);
+	Server()->SetClientLanguage(m_ClientID, m_aLanguage);
 
 	// do latency stuff
 	{
@@ -598,4 +600,14 @@ void CPlayer::ResetZomb()
 	m_Team = TEAM_BLUE;
 	m_KillingSpree = m_JumpsShop = m_RangeShop = 0;
 	GameServer()->m_pController->OnPlayerInfoChange(GameServer()->m_apPlayers[m_ClientID]);
+}
+
+const char* CPlayer::GetLanguage()
+{
+	return m_aLanguage;
+}
+
+void CPlayer::SetLanguage(const char* pLanguage)
+{
+	str_copy(m_aLanguage, pLanguage, sizeof(m_aLanguage));
 }

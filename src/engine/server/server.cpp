@@ -297,6 +297,18 @@ void CServer::CClient::Reset()
 	m_LastInputTick = -1;
 	m_SnapRate = CClient::SNAPRATE_INIT;
 	m_Score = 0;
+
+	str_copy(m_aLanguage, g_Config.m_SvLanguage, sizeof(m_aLanguage));
+}
+
+const char* CServer::GetClientLanguage(int ClientID)
+{
+	return m_aClients[ClientID].m_aLanguage;
+}
+
+void CServer::SetClientLanguage(int ClientID, const char* pLanguage)
+{
+	str_copy(m_aClients[ClientID].m_aLanguage, pLanguage, sizeof(m_aClients[ClientID].m_aLanguage));
 }
 
 CServer::CServer()

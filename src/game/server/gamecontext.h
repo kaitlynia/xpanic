@@ -153,6 +153,7 @@ public:
 	struct CVoteOptionServer *GetVoteOption(int Index);
 	void ProgressVoteOptions(int ClientID);
 
+	void SetClientLanguage(int ClientID, const char *pLanguage);
 	//
 	//void SwapTeams();
 
@@ -237,6 +238,8 @@ private:
 	static void ConMutes(IConsole::IResult *pResult, void *pUserData);
 
 	static void ConList(IConsole::IResult *pResult, void *pUserData);
+	
+	static void ConLanguage(IConsole::IResult *pResult, void *pUserData);
 
 	enum
 	{

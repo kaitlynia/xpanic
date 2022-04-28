@@ -252,7 +252,7 @@ void CGameContext::SendChatTarget(int To, const char *pText, ...)
 		if(m_apPlayers[i])
 		{
 			Buffer.clear();
-			Server()->Localization()->Format_VL(Buffer, g_Config.m_SvLanguage, pText, VarArgs);
+			Server()->Localization()->Format_VL(Buffer, m_apPlayers[i]->GetLanguage(), pText, VarArgs);
 			
 			Msg.m_pMessage = Buffer.buffer();
 		
@@ -373,7 +373,7 @@ void CGameContext::SendBroadcast(const char *pText, int To, ...)
 		if(m_apPlayers[i])
 		{
 			Buffer.clear();
-			Server()->Localization()->Format_VL(Buffer, g_Config.m_SvLanguage, pText, VarArgs);
+			Server()->Localization()->Format_VL(Buffer, m_apPlayers[i]->GetLanguage(), pText, VarArgs);
 			CNetMsg_Sv_Broadcast Msg;
 			Msg.m_pMessage = Buffer.buffer();
 			Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, To);
@@ -1843,6 +1843,70 @@ void CGameContext::ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *p
 	}
 }
 
+void CGameContext::SetClientLanguage(int ClientID, const char *pLanguage)
+{
+	Server()->SetClientLanguage(ClientID, pLanguage);
+	if(m_apPlayers[ClientID])
+	{
+		m_apPlayers[ClientID]->SetLanguage(pLanguage);
+	}
+}
+
+void CGameContext::ConLanguage(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+
+	int ClientID = pResult->m_ClientID;
+
+	const char *pLanguageCode = (pResult->NumArguments()>0) ? pResult->GetString(0) : 0x0;
+	char aFinalLanguageCode[8];
+	aFinalLanguageCode[0] = 0;
+
+	if(pLanguageCode)
+	{
+		if(str_comp_nocase(pLanguageCode, "ua") == 0)
+			str_copy(aFinalLanguageCode, "uk", sizeof(aFinalLanguageCode));
+		else
+		{
+			for(int i=0; i<pSelf->Server()->Localization()->m_pLanguages.size(); i++)
+			{
+				if(str_comp_nocase(pLanguageCode, pSelf->Server()->Localization()->m_pLanguages[i]->GetFilename()) == 0)
+					str_copy(aFinalLanguageCode, pLanguageCode, sizeof(aFinalLanguageCode));
+			}
+		}
+	}
+	
+	if(aFinalLanguageCode[0])
+	{
+		pSelf->SetClientLanguage(ClientID, aFinalLanguageCode);
+		pSelf->SendChatTarget(ClientID, _("Language successfully switched to English"));
+	}
+	else
+	{
+		const char* pLanguage = pSelf->m_apPlayers[ClientID]->GetLanguage();
+		const char* pTxtUnknownLanguage = pSelf->Server()->Localization()->Localize(pLanguage, _("Unknown language"));
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "language", pTxtUnknownLanguage);	
+		
+		dynamic_string BufferList;
+		int BufferIter = 0;
+		for(int i=0; i<pSelf->Server()->Localization()->m_pLanguages.size(); i++)
+		{
+			if(i>0)
+				BufferIter = BufferList.append_at(BufferIter, ", ");
+			BufferIter = BufferList.append_at(BufferIter, pSelf->Server()->Localization()->m_pLanguages[i]->GetFilename());
+		}
+		
+		dynamic_string Buffer;
+		pSelf->Server()->Localization()->Format_L(Buffer, pLanguage, _("Available languages: {str:ListOfLanguage}"), "ListOfLanguage", BufferList.buffer(), NULL);
+		
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "language", Buffer.buffer());
+
+        pSelf->SendChatTarget(ClientID, Buffer.buffer());
+    }
+	
+	return;
+}
+
 void CGameContext::OnConsoleInit()
 {
 	m_pServer = Kernel()->RequestInterface<IServer>();
@@ -1871,6 +1935,8 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("clear_votes", "", CFGFLAG_SERVER, ConClearVotes, this, "Clears the voting options");
 	Console()->Register("vote", "r['yes'|'no']", CFGFLAG_SERVER, ConVote, this, "Force a vote to yes/no");
 
+	Console()->Register("language", "s", CFGFLAG_CHAT, ConLanguage, this, "");
+	
 	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
 
 #define CONSOLE_COMMAND(name, params, flags, callback, userdata, help) m_pConsole->Register(name, params, flags, callback, userdata, help);

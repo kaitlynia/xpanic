@@ -11,7 +11,7 @@
 CGameControllerDDRace::CGameControllerDDRace(class CGameContext *pGameServer) :
 		IGameController(pGameServer), m_Teams(pGameServer)
 {
-	m_pGameType = g_Config.m_SvGametype;
+	m_pGameType = "xPanic";
 	InitTeleporter();
 }
 
