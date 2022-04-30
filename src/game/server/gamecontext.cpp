@@ -32,14 +32,12 @@ void CQueryRegister::OnData()
 		if(m_pDatabase->Register(Username, Password, Language, m_ClientID))
 		{
 			char aBuf[256];
-			m_pGameServer->SendChatTarget(m_ClientID, "~~~~~~~~ ! Registered ! ~~~~~~~~");
-			str_format(aBuf, sizeof(aBuf), "Login: %s", Username);
-			m_pGameServer->SendChatTarget(m_ClientID, aBuf);
-			str_format(aBuf, sizeof(aBuf), "Password: %s", Password);
-			m_pGameServer->SendChatTarget(m_ClientID, aBuf);
-			str_format(aBuf, sizeof(aBuf), "Now use the /login %s %s", Username, Password);
-			m_pGameServer->SendChatTarget(m_ClientID, aBuf);
-			m_pGameServer->SendChatTarget(m_ClientID, "~~~~~~~~ ! Registered ! ~~~~~~~~");
+			m_pGameServer->SendChatTarget(m_ClientID, _("~~~~~~~~ ! Registered ! ~~~~~~~~"));
+			m_pGameServer->SendChatTarget(m_ClientID, _("Username: {str:Username}"), "Username", Username);
+			m_pGameServer->SendChatTarget(m_ClientID, _("Password: {str:Password}"), "Password", Password);
+			m_pGameServer->SendChatTarget(m_ClientID, _("Now use the /login {str:u} {str:p}"), "u", Username, "p", Password);
+			m_pGameServer->SendChatTarget(m_ClientID, _("~~~~~~~~ ! Registered ! ~~~~~~~~"));
+			m_pGameServer->Login(Username, Password, m_ClientID);
 		}
 	}
 }
@@ -81,7 +79,7 @@ void CQueryLogin::OnData()
 				else
 					m_pGameServer->m_apPlayers[m_ClientID]->SetTeam(TEAM_BLUE);
 			}
-			m_pGameServer->SendChatTarget(m_ClientID, "Successfully logged in! Have fun while playing!");
+			m_pGameServer->SendChatTarget(m_ClientID, _("Successfully logged in! Have fun while playing!"));
 //		}
 	}
 	else
@@ -875,9 +873,9 @@ void CGameContext::OnClientEnter(int ClientID)
 		SendVoteSet(ClientID);
 
 	char Name[96];
-	SendChatTarget(ClientID, "Use /register <username> <password> to create an account");
-	SendChatTarget(ClientID, "Use /login <username> <password> to rejoin");
-	SendChatTarget(ClientID, "Use /cmdlist' for a list of commands");
+	SendChatTarget(ClientID, _("Use /register <username> <password> to create an account"));
+	SendChatTarget(ClientID, _("Use /login <username> <password> to rejoin"));
+	SendChatTarget(ClientID, _("Use /cmdlist' for a list of commands"));
 
 	m_pController->CheckZomb();
 	m_apPlayers[ClientID]->m_Authed = ((CServer*)Server())->m_aClients[ClientID].m_Authed;
@@ -930,15 +928,13 @@ void CGameContext::OnClientDrop(int ClientID, const char *pReason)
 
 void CGameContext::SendPM(int ClientID, int FromID, char *string)
 {
-	if(!m_apPlayers[FromID]) return SendChatTarget(ClientID, "No player with such id");
-	if(ClientID == FromID) return SendChatTarget(FromID, "Attempt to send a personal message to yourself -_-");
+	if(!m_apPlayers[FromID]) return SendChatTarget(ClientID, _("No player with such id"));
+	if(ClientID == FromID) return SendChatTarget(FromID, _("Attempt to send a personal message to yourself -_-"));
 	if(Server()->ClientIngame(ClientID) && Server()->ClientIngame(FromID))
 	{
 		char aBuf[128];
-		str_format(aBuf, sizeof(aBuf), "pm from '%s': %s", Server()->ClientName(ClientID), string);
-		SendChatTarget(FromID, aBuf);
-		str_format(aBuf, sizeof(aBuf), "pm to '%s': %s", Server()->ClientName(FromID), string);
-		SendChatTarget(ClientID, aBuf);	
+		SendChatTarget(FromID, _("pm from '{str:Name}': {str:text}"), "Name", Server()->ClientName(ClientID), "text", string);
+		SendChatTarget(FromID, _("pm to '{str:Name}': {str:text}"), "Name", Server()->ClientName(FromID), "text", string);
 	}	
 }
 
@@ -1010,13 +1006,13 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			//if(pPlayer->GetTeam() == TEAM_SPECTATORS)
 			if(g_Config.m_SvSpectatorVotes == 0 && pPlayer->GetTeam() == TEAM_SPECTATORS)
 			{
-				SendChatTarget(ClientID, "Spectators aren't allowed to start a vote.");
+				SendChatTarget(ClientID, _("Spectators aren't allowed to start a vote."));
 				return;
 			}
 
 			if(m_VoteCloseTime)
 			{
-				SendChatTarget(ClientID, "Wait for current vote to end before calling a new one.");
+				SendChatTarget(ClientID, _("Wait for current vote to end before calling a new one."));
 				return;
 			}
 
@@ -1024,8 +1020,8 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			if(pPlayer->m_LastVoteCall && Timeleft > 0)
 			{
 				char aChatmsg[512] = {0};
-				str_format(aChatmsg, sizeof(aChatmsg), "You must wait %d seconds before making another vote", (Timeleft/Server()->TickSpeed())+1);
-				SendChatTarget(ClientID, aChatmsg);
+				int sec = (Timeleft/Server()->TickSpeed())+1;
+				SendChatTarget(ClientID, ("You must wait {int:sec} seconds before making another vote"), "sec", &sec);
 				return;
 			}
 
@@ -1389,13 +1385,13 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 							{
 								if (Collision()->IntersectLine(pChr->m_TurRifle, pChr->m_Pos, &pChr->m_Pos, 0,false))
 								{
-									SendChatTarget(ClientID, "With not the wall!");
+									SendChatTarget(ClientID, _("With not the wall!"));
 									pChr->m_TurRifle = vec2(0, 0);
 									return;
 								}
 								if (distance(pChr->m_TurRifle, pChr->m_Pos) < 50)
 								{
-									SendChatTarget(ClientID, "This Small distance!");
+									SendChatTarget(ClientID, _("This Small distance!"));
 									pChr->m_TurRifle = vec2(0, 0);
 									return;
 								}
@@ -1423,13 +1419,13 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 							{
 								if (Collision()->IntersectLine(pChr->m_TurGrenade, pChr->m_Pos, &pChr->m_Pos, 0,false))
 								{
-									SendChatTarget(ClientID, "With not the wall!");
+									SendChatTarget(ClientID, _("With not the wall!"));
 									pChr->m_TurGrenade = vec2(0, 0);
 									return;
 								}
 								if (distance(pChr->m_TurGrenade, pChr->m_Pos) < 50)
 								{
-									SendChatTarget(ClientID, "This Small distance!");
+									SendChatTarget(ClientID, _("This Small distance!"));
 									pChr->m_TurGrenade = vec2(0, 0);
 									return;
 								}
