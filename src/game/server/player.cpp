@@ -21,6 +21,7 @@ MACRO_ALLOC_POOL_ID_IMPL(CPlayer, MAX_CLIENTS)
 
 IServer *CPlayer::Server() const { return m_pGameServer->Server(); }
 
+
 CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 {
 	m_pGameServer = pGameServer;
@@ -39,7 +40,6 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 	
 	Reset();
 }
-
 CPlayer::~CPlayer()
 {
 	delete m_pCharacter;
@@ -112,8 +112,6 @@ void CPlayer::Tick()
 		m_AccData.m_Level++;
 		if (m_AccData.m_Exp < m_AccData.m_Level)
 		{
-			if (m_AccData.m_UserID)
-				m_pAccount->Apply();
 
 			char SendLVL[64];
 			str_format(SendLVL, sizeof(SendLVL), "Successfully! Your new level %d\n/ Upgrade counts %d", m_AccData.m_Level, m_AccData.m_Money);
@@ -299,9 +297,6 @@ void CPlayer::FakeSnap(int SnappingClient)
 
 void CPlayer::OnDisconnect(const char *pReason)
 {
-	if(m_AccData.m_UserID)
-		m_pAccount->Reset();
-	
 	KillCharacter();
 
 	if(GameServer()->m_pController->NumZombs() == 1 && GetTeam() == TEAM_RED

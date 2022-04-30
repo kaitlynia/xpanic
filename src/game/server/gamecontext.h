@@ -15,6 +15,8 @@
 #include "gameworld.h"
 #include "player.h"
 
+#include "db_sqlite3.h"
+
 #ifdef _MSC_VER
 typedef __int32 int32_t;
 typedef unsigned __int32 uint32_t;
@@ -277,6 +279,61 @@ public:
 
 	int m_ChatResponseTargetID;
 	int m_ChatPrintCBIndex;
+	
+	// - SQL
+	CSql *m_pDatabase;
+	void Register(const char *Username, const char *Password, int ClientID); // Register account
+	void Login(const char *Username, const char *Password, int ClientID); // Login account
+	bool Apply(const char *Username, const char *Password, int AccID, 
+				int m_PlayerState, int m_Level, int m_Exp, unsigned int m_Money, int m_Dmg, int m_Health, int m_Ammoregen, int m_Handle, int m_Ammo, unsigned int m_TurretMoney, int m_TurretLevel, int m_TurretExp, int m_TurretDmg, int m_TurretSpeed, int m_TurretAmmo, int m_TurretShotgun, int m_TurretRange, int m_Freeze, int m_Winner, int m_Luser); // Apply account
+};
+
+class CQueryBase : public CQuery
+{
+public:
+	int m_ClientID;
+	const char *Username;
+	const char *Password;
+	CGameContext *m_pGameServer;
+};
+
+class CQueryRegister: public CQueryBase
+{
+	void OnData();
+public:
+};
+
+class CQueryLogin: public CQueryBase
+{
+	void OnData();
+public:
+
+};
+
+class CQueryApply: public CQueryBase
+{
+	void OnData();
+public:
+	int m_PlayerState;
+	int m_Level;
+	int m_Exp; 
+	unsigned int m_Money;
+	int m_Dmg;
+	int m_Health;
+	int m_Ammoregen;
+	int m_Handle;
+	int m_Ammo; 
+	unsigned int m_TurretMoney;
+	int m_TurretLevel;
+	int m_TurretExp;
+	int m_TurretDmg;
+	int m_TurretSpeed;
+	int m_TurretAmmo;
+	int m_TurretShotgun;
+	int m_TurretRange;
+	int m_Freeze;
+	int m_Winner;
+	int m_Luser;
 };
 
 inline int64_t CmaskAll() { return -1LL; }

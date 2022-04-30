@@ -328,6 +328,8 @@ function build(settings)
 	pnglite = Compile(settings, Collect("src/engine/external/pnglite/*.c"))
 	jsonparser = Compile(settings, Collect("src/engine/external/json-parser/*.c"))
 	md5 = Compile(settings, "src/engine/external/md5/md5.c")
+	settings.cc.includes:Add("src/engine/external/sqlite3")
+	sqlite3 = Compile(settings, Collect("src/engine/external/sqlite3/*.c"))
 	if config.websockets.value then
 		libwebsockets = Compile(settings, Collect("src/engine/external/libwebsockets/*.c"))
 	end
@@ -350,6 +352,8 @@ function build(settings)
 			client_settings.link.libs:Add("X11")
 			client_settings.link.libs:Add("GL")
 			client_settings.link.libs:Add("GLU")
+			server_settings.link.libs:Add("ssl")
+			server_settings.link.libs:Add("crypto")
 		end
 
 	elseif family == "windows" then
@@ -444,7 +448,8 @@ function build(settings)
 		client_link_other, client_osxlaunch, jsonparser, libwebsockets, md5, client_notification)
 
 	server_exe = Link(server_settings, "xPanic-Server", engine, server,
-		game_shared, game_server, zlib, server_link_other, libwebsockets, md5, icu_depends, teeothers, jsonparser)
+		game_shared, game_server, zlib, server_link_other, libwebsockets, 
+		md5, icu_depends, teeothers, jsonparser, sqlite3)
 
 	serverlaunch = {}
 	if platform == "macosx" then
