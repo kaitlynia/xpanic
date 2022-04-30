@@ -365,7 +365,7 @@ void CCharacter::FireWeapon()
 				if (m_RiflePos == m_Pos)
 				{
 					m_aWeapons[WEAPON_RIFLE].m_Ammo = 2;
-					GameServer()->SendChatTarget(m_pPlayer->GetCID(), "The second point can not be set here");
+					GameServer()->SendChatTarget(m_pPlayer->GetCID(), _("The second point can not be set here"));
 					m_RiflePos = vec2(0, 0);
 					return;
 				}
@@ -670,9 +670,7 @@ void CCharacter::ExperienceAdd(int Exp, int ClientID)
 	}
 	else
 	{
-		char SendExp[64];
-		str_format(SendExp, sizeof(SendExp), "Exp %d/%d", pPlayer->m_AccData.m_Exp, pPlayer->m_AccData.m_Level);
-		GameServer()->SendChatTarget(ClientID, SendExp);
+		GameServer()->SendChatTarget(ClientID, _("Exp {int:Exp}/{int:Level}"), "Exp", pPlayer->m_AccData.m_Exp, "Level", pPlayer->m_AccData.m_Level);
 	}
 }
 
@@ -782,7 +780,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 			{
 				char aBuf[48];
 				str_format(aBuf, sizeof(aBuf), "%s is on killing spree!", Server()->ClientName(From));
-				GameServer()->SendChatTarget(-1, aBuf);
+				GameServer()->SendChatTarget(-1, _("{str:Who} is on killing spree!"), "Who", Server()->ClientName(From));
 			}
 		}
 		
@@ -1110,7 +1108,7 @@ void CCharacter::HandleTiles(int Index)
 	// unlimited air jumps
 	if(((m_TileIndex == TILE_SUPER_START) || (m_TileFIndex == TILE_SUPER_START)) && !m_SuperJump)
 	{
-		GameServer()->SendChatTarget(GetPlayer()->GetCID(),"You have unlimited air jumps");
+		GameServer()->SendChatTarget(GetPlayer()->GetCID(), _("You have unlimited air jumps"));
 		m_SuperJump = true;
 		if (m_Core.m_Jumps == 0)
 		{
@@ -1120,7 +1118,7 @@ void CCharacter::HandleTiles(int Index)
 	}
 	else if(((m_TileIndex == TILE_SUPER_END) || (m_TileFIndex == TILE_SUPER_END)) && m_SuperJump)
 	{
-		GameServer()->SendChatTarget(GetPlayer()->GetCID(), "You don't have unlimited air jumps");
+		GameServer()->SendChatTarget(GetPlayer()->GetCID(), _("You don't have unlimited air jumps"));
 		m_SuperJump = false;
 		if (m_Core.m_Jumps == 0)
 		{

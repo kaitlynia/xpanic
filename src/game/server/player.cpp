@@ -114,8 +114,7 @@ void CPlayer::Tick()
 		{
 
 			char SendLVL[64];
-			str_format(SendLVL, sizeof(SendLVL), "Successfully! Your new level %d\n/ Upgrade counts %d", m_AccData.m_Level, m_AccData.m_Money);
-			GameServer()->SendChatTarget(m_ClientID, SendLVL);
+			GameServer()->SendChatTarget(m_ClientID, _("Successfully! Your new level {int:Level}\n/ Upgrade counts {int:Money}"), "Level", &m_AccData.m_Level, "Money", &m_AccData.m_Money);
 		}
 	}
 	
@@ -584,7 +583,7 @@ void CPlayer::SetZomb(int From)
 	m_pCharacter->SetZomb();
 	GameServer()->m_pController->OnPlayerInfoChange(GameServer()->m_apPlayers[m_ClientID]);
 	GameServer()->m_pController->CheckZomb();
-	GameServer()->SendChatTarget(m_ClientID, "You are now a zombie! Eat some brains.");
+	GameServer()->SendChatTarget(m_ClientID, _("You are now a zombie! Eat some brains."));
 }
 
 void CPlayer::ResetZomb()

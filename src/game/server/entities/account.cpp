@@ -8,6 +8,7 @@
 #include "account.h"
 #include <engine/server/crypt.h>
 
+#include <teeothers/components/localization.h>
 
 CAccount::CAccount(CPlayer *pPlayer, CGameContext *pGameServer)
 {
@@ -19,7 +20,7 @@ void CAccount::Login(char *Username, char *Password)
 {
 	char aBuf[125];
 	if (m_pPlayer->m_AccData.m_UserID)
-		return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Already logged in");
+		return GameServer()->SendChatTarget(m_pPlayer->GetCID(), _("Already logged in"));
 
 	char aHash[64]; //Result
 	mem_zero(aHash, sizeof(aHash));
@@ -32,7 +33,7 @@ void CAccount::Register(char *Username, char *Password)
 {
 	char aBuf[125];
 	if(m_pPlayer->m_AccData.m_UserID)
-		return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Already logged in");
+		return GameServer()->SendChatTarget(m_pPlayer->GetCID(), _("Already logged in"));
 
 	GameServer()->Register(Username, Password, m_pPlayer->GetCID());
 }
@@ -61,28 +62,14 @@ void CAccount::Reset()
 
 void CAccount::NewPassword(char *NewPassword)
 {
-	if(str_length(NewPassword) > 12 || str_length(NewPassword) < 4)
-	{
-		char aBuf[48];
-		str_format(aBuf, sizeof(aBuf), "Password too %s!", str_length(NewPassword)<4?"long":"short");
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf);
-		return;
-    }
-	
-	char Filter[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.-_";
-	char *p = strpbrk(NewPassword, Filter);
-	if(!p)
-	{
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Don't use invalid chars for password!");
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "A - Z, a - z, 0 - 9, . - _");
-		return;
-	}
+	char aHash[64];
+	Crypt(NewPassword, (const unsigned char*) "d9", 1, 14, aHash);
 	
 	str_copy(m_pPlayer->m_AccData.m_Password, NewPassword, 32);
 	Apply();
 	
 	dbg_msg("account", "Password changed - ('%s')", m_pPlayer->m_AccData.m_Username);
-	GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Password successfully changed!");
+	GameServer()->SendChatTarget(m_pPlayer->GetCID(), _("Password successfully changed!"));
 }
 
 
