@@ -284,7 +284,7 @@ public:
 	CSql *m_pDatabase;
 	void Register(const char *Username, const char *Password, int ClientID); // Register account
 	void Login(const char *Username, const char *Password, int ClientID); // Login account
-	bool Apply(const char *Username, const char *Password, int AccID, 
+	bool Apply(const char *Username, const char *Password, const char *Language, int AccID, 
 				int m_PlayerState, int m_Level, int m_Exp, unsigned int m_Money, int m_Dmg, int m_Health, int m_Ammoregen, int m_Handle, int m_Ammo, unsigned int m_TurretMoney, int m_TurretLevel, int m_TurretExp, int m_TurretDmg, int m_TurretSpeed, int m_TurretAmmo, int m_TurretShotgun, int m_TurretRange, int m_Freeze, int m_Winner, int m_Luser); // Apply account
 };
 
@@ -294,6 +294,7 @@ public:
 	int m_ClientID;
 	const char *Username;
 	const char *Password;
+	const char *Language;
 	CGameContext *m_pGameServer;
 };
 

@@ -124,6 +124,7 @@ CSql::CSql()
 		"ID INTEGER					PRIMARY KEY		AUTOINCREMENT," \
         "Username                   TEXT            NOT NULL," \
         "Password                   TEXT            NOT NULL," \
+        "Language                   TEXT            NOT NULL," \
 		"Exp                        INTEGER         NOT NULL        DEFAULT 0," \
         "Level                      INTEGER         NOT NULL        DEFAULT 1," \
         "Money                      INTEGER         NOT NULL        DEFAULT 0," \
@@ -168,7 +169,7 @@ CSql::~CSql()
     lock_destroy(m_Lock);
 }
 
-bool CSql::Register(const char *Username, const char *Password, int ClientID)
+bool CSql::Register(const char *Username, const char *Password, const char *Language, int ClientID)
 {
     lock_wait(m_Lock);
 
@@ -178,9 +179,9 @@ bool CSql::Register(const char *Username, const char *Password, int ClientID)
 
     str_format(pQuery, sizeof(pQuery), (char *)"INSERT INTO Accounts(" \
 		"Username, " \
-        "Password) " \
-        "VALUES ('%s', '%s');", 
-        Username, aHash);
+        "Password, Language) " \
+        "VALUES ('%s', '%s', '%s');", 
+        Username, aHash, Language);
 
     char *pErrorMsg;
     sqlite3_exec(m_pDB, pQuery, NULL, NULL, &pErrorMsg);
@@ -208,7 +209,7 @@ bool CSql::Login(const char *Username, const char *Password, int ClientID)
     return true;
 }
 
-bool CSql::Apply(const char *Username, const char *Password, 
+bool CSql::Apply(const char *Username, const char *Password, const char *Language, 
                 int AccID, int m_PlayerState, int m_Level, int m_Exp, unsigned int m_Money, int m_Dmg, int m_Health, int m_Ammoregen, int m_Handle, int m_Ammo, unsigned int m_TurretMoney, int m_TurretLevel, int m_TurretExp, int m_TurretDmg, int m_TurretSpeed, int m_TurretAmmo, int m_TurretShotgun, int m_TurretRange, int m_Freeze, int m_Winner, int m_Luser)
 {
     char pQuery[300];

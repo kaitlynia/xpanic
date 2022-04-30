@@ -29,7 +29,7 @@ void CQueryRegister::OnData()
 	}
 	else
 	{
-		if(m_pDatabase->Register(Username, Password, m_ClientID))
+		if(m_pDatabase->Register(Username, Password, Language, m_ClientID))
 		{
 			char aBuf[256];
 			m_pGameServer->SendChatTarget(m_ClientID, "~~~~~~~~ ! Registered ! ~~~~~~~~");
@@ -73,6 +73,7 @@ void CQueryLogin::OnData()
 			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Freeze = GetInt(GetID("Freeze"));
 			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Winner = GetInt(GetID("Winner"));
 			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Luser = GetInt(GetID("Luser"));
+			m_pGameServer->Server()->SetClientLanguage(m_ClientID, GetText(GetID("Language")));
 			if (m_pGameServer->m_apPlayers[m_ClientID]->GetTeam() == TEAM_SPECTATORS)
 			{	
 				if (m_pGameServer->m_pController->ZombStarted() && m_pGameServer->m_pController->m_Warmup)
@@ -95,7 +96,7 @@ void CQueryApply::OnData()
 	{
 		dbg_msg("s","%d", m_Level);
 		
-		m_pDatabase->Apply(Username, Password, m_ClientID, 
+		m_pDatabase->Apply(Username, Password, Language, m_ClientID, 
 		m_Exp, 
 		m_Level, 
 		m_Money, 
@@ -2554,6 +2555,7 @@ void CGameContext::Register(const char *Username, const char *Password, int Clie
 	pQuery->Password = Password;
 	pQuery->m_ClientID = ClientID;
 	pQuery->m_pGameServer = this;
+	pQuery->Language = m_apPlayers[ClientID]->GetLanguage();
 	pQuery->Query(m_pDatabase, pQueryBuf);
 	sqlite3_free(pQueryBuf);
 }
@@ -2570,7 +2572,7 @@ void CGameContext::Login(const char *Username, const char *Password, int ClientI
 	sqlite3_free(pQueryBuf);
 }
 
-bool CGameContext::Apply(const char *Username, const char *Password, int AccID, int m_PlayerState, int m_Level, int m_Exp, unsigned int m_Money, int m_Dmg, int m_Health, int m_Ammoregen, int m_Handle, int m_Ammo, unsigned int m_TurretMoney, int m_TurretLevel, int m_TurretExp, int m_TurretDmg, int m_TurretSpeed, int m_TurretAmmo, int m_TurretShotgun, int m_TurretRange, int m_Freeze, int m_Winner, int m_Luser)
+bool CGameContext::Apply(const char *Username, const char *Password, const char *Language, int AccID, int m_PlayerState, int m_Level, int m_Exp, unsigned int m_Money, int m_Dmg, int m_Health, int m_Ammoregen, int m_Handle, int m_Ammo, unsigned int m_TurretMoney, int m_TurretLevel, int m_TurretExp, int m_TurretDmg, int m_TurretSpeed, int m_TurretAmmo, int m_TurretShotgun, int m_TurretRange, int m_Freeze, int m_Winner, int m_Luser)
 {
 	char *pQueryBuf = sqlite3_mprintf("SELECT * FROM Accounts WHERE Username='%q'", Username);
 	CQueryApply *pQuery = new CQueryApply();
@@ -2597,6 +2599,7 @@ bool CGameContext::Apply(const char *Username, const char *Password, int AccID, 
 	pQuery->m_Freeze = m_Freeze;
 	pQuery->m_Winner = m_Winner;
 	pQuery->m_Luser = m_Luser;
+	pQuery->Language = Language;
 	pQuery->m_pGameServer = this;
 	pQuery->Query(m_pDatabase, pQueryBuf);
 	sqlite3_free(pQueryBuf);

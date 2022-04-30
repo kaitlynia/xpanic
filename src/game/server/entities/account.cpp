@@ -43,7 +43,7 @@ bool CAccount::Exists(const char *Username)
 
 bool CAccount::Apply()
 {
-	return GameServer()->Apply(m_pPlayer->m_AccData.m_Username, m_pPlayer->m_AccData.m_Password, m_pPlayer->m_AccData.m_UserID, m_pPlayer->m_AccData.m_PlayerState, m_pPlayer->m_AccData.m_Level, m_pPlayer->m_AccData.m_Exp, m_pPlayer->m_AccData.m_Money, m_pPlayer->m_AccData.m_Dmg, m_pPlayer->m_AccData.m_Health, m_pPlayer->m_AccData.m_Ammoregen, m_pPlayer->m_AccData.m_Handle, m_pPlayer->m_AccData.m_Ammo, m_pPlayer->m_AccData.m_TurretMoney, m_pPlayer->m_AccData.m_TurretLevel, m_pPlayer->m_AccData.m_TurretExp, m_pPlayer->m_AccData.m_TurretDmg, m_pPlayer->m_AccData.m_TurretSpeed, m_pPlayer->m_AccData.m_TurretSpeed, m_pPlayer->m_AccData.m_TurretShotgun, m_pPlayer->m_AccData.m_TurretRange, m_pPlayer->m_AccData.m_Freeze, m_pPlayer->m_AccData.m_Winner, m_pPlayer->m_AccData.m_Luser);
+	return GameServer()->Apply(m_pPlayer->m_AccData.m_Username, m_pPlayer->m_AccData.m_Password, m_pPlayer->GetLanguage(), m_pPlayer->m_AccData.m_UserID, m_pPlayer->m_AccData.m_PlayerState, m_pPlayer->m_AccData.m_Level, m_pPlayer->m_AccData.m_Exp, m_pPlayer->m_AccData.m_Money, m_pPlayer->m_AccData.m_Dmg, m_pPlayer->m_AccData.m_Health, m_pPlayer->m_AccData.m_Ammoregen, m_pPlayer->m_AccData.m_Handle, m_pPlayer->m_AccData.m_Ammo, m_pPlayer->m_AccData.m_TurretMoney, m_pPlayer->m_AccData.m_TurretLevel, m_pPlayer->m_AccData.m_TurretExp, m_pPlayer->m_AccData.m_TurretDmg, m_pPlayer->m_AccData.m_TurretSpeed, m_pPlayer->m_AccData.m_TurretSpeed, m_pPlayer->m_AccData.m_TurretShotgun, m_pPlayer->m_AccData.m_TurretRange, m_pPlayer->m_AccData.m_Freeze, m_pPlayer->m_AccData.m_Winner, m_pPlayer->m_AccData.m_Luser);
 }
 
 void CAccount::Reset()
