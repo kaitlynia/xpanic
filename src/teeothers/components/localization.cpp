@@ -13,9 +13,9 @@ CLocalization::CLanguage::CLanguage() :
 	m_Loaded(false),
 	m_Direction(CLocalization::DIRECTION_LTR),
 	m_pPluralRules(NULL),
-	m_pNumberFormater(NULL),
-	m_pPercentFormater(NULL),
-	m_pTimeUnitFormater(NULL)
+	m_pNumberFormatter(NULL),
+	m_pPercentFormatter(NULL),
+	m_pTimeUnitFormatter(NULL)
 {
 	m_aName[0] = 0;
 	m_aFilename[0] = 0;
@@ -26,8 +26,8 @@ CLocalization::CLanguage::CLanguage(const char* pName, const char* pFilename, co
 	m_Loaded(false),
 	m_Direction(CLocalization::DIRECTION_LTR),
 	m_pPluralRules(NULL),
-	m_pNumberFormater(NULL),
-	m_pPercentFormater(NULL)
+	m_pNumberFormatter(NULL),
+	m_pPercentFormatter(NULL)
 {
 	str_copy(m_aName, pName, sizeof(m_aName));
 	str_copy(m_aFilename, pFilename, sizeof(m_aFilename));
@@ -36,27 +36,27 @@ CLocalization::CLanguage::CLanguage(const char* pName, const char* pFilename, co
 	UErrorCode Status;
 	
 	Status = U_ZERO_ERROR;
-	m_pNumberFormater = unum_open(UNUM_DECIMAL, NULL, -1, m_aFilename, NULL, &Status);
+	m_pNumberFormatter = unum_open(UNUM_DECIMAL, NULL, -1, m_aFilename, NULL, &Status);
 	if(U_FAILURE(Status))
 	{
-		if(m_pNumberFormater)
+		if(m_pNumberFormatter)
 		{
-			unum_close(m_pNumberFormater);
-			m_pNumberFormater = NULL;
+			unum_close(m_pNumberFormatter);
+			m_pNumberFormatter = NULL;
 		}
-		dbg_msg("Localization", "Can't create number formater for %s (error #%d)", m_aFilename, Status);
+		dbg_msg("Localization", "Can't create number formatter for %s (error #%d)", m_aFilename, Status);
 	}
 	
 	Status = U_ZERO_ERROR;
-	m_pPercentFormater = unum_open(UNUM_PERCENT, NULL, -1, m_aFilename, NULL, &Status);
+	m_pPercentFormatter = unum_open(UNUM_PERCENT, NULL, -1, m_aFilename, NULL, &Status);
 	if(U_FAILURE(Status))
 	{
-		if(m_pPercentFormater)
+		if(m_pPercentFormatter)
 		{
-			unum_close(m_pPercentFormater);
-			m_pPercentFormater = NULL;
+			unum_close(m_pPercentFormatter);
+			m_pPercentFormatter = NULL;
 		}
-		dbg_msg("Localization", "Can't create percent formater for %s (error #%d)", m_aFilename, Status);
+		dbg_msg("Localization", "Can't create percent formatter for %s (error #%d)", m_aFilename, Status);
 	}
 	
 	Status = U_ZERO_ERROR;
@@ -71,14 +71,14 @@ CLocalization::CLanguage::CLanguage(const char* pName, const char* pFilename, co
 		dbg_msg("Localization", "Can't create plural rules for %s (error #%d)", m_aFilename, Status);
 	}
 	
-	//Time unit for second formater
+	//Time unit for second formatter
 	Status = U_ZERO_ERROR;
-	m_pTimeUnitFormater = new icu::TimeUnitFormat(m_aFilename,  UTMUTFMT_ABBREVIATED_STYLE, Status);
+	m_pTimeUnitFormatter = new icu::TimeUnitFormat(m_aFilename,  UTMUTFMT_ABBREVIATED_STYLE, Status);
 	if(U_FAILURE(Status))
 	{
-		dbg_msg("Localization", "Can't create timeunit formater %s (error #%d)", pFilename, Status);
-		delete m_pTimeUnitFormater;
-		m_pTimeUnitFormater = NULL;
+		dbg_msg("Localization", "Can't create timeunit formatter %s (error #%d)", pFilename, Status);
+		delete m_pTimeUnitFormatter;
+		m_pTimeUnitFormatter = NULL;
 	}
 }
 
@@ -93,17 +93,17 @@ CLocalization::CLanguage::~CLanguage()
 		++Iter;
 	}
 	
-	if(m_pNumberFormater)
-		unum_close(m_pNumberFormater);
+	if(m_pNumberFormatter)
+		unum_close(m_pNumberFormatter);
 	
-	if(m_pPercentFormater)
-		unum_close(m_pPercentFormater);
+	if(m_pPercentFormatter)
+		unum_close(m_pPercentFormatter);
 		
 	if(m_pPluralRules)
 		uplrules_close(m_pPluralRules);
 		
-	if(m_pTimeUnitFormater)
-		delete m_pTimeUnitFormater;
+	if(m_pTimeUnitFormatter)
+		delete m_pTimeUnitFormatter;
 }
 
 /* BEGIN EDIT *********************************************************/
@@ -479,7 +479,7 @@ void CLocalization::AppendNumber(dynamic_string& Buffer, int& BufferIter, CLangu
 	UChar aBufUtf16[128];
 	
 	UErrorCode Status = U_ZERO_ERROR;
-	unum_format(pLanguage->m_pNumberFormater, Number, aBufUtf16, sizeof(aBufUtf16), NULL, &Status);
+	unum_format(pLanguage->m_pNumberFormatter, Number, aBufUtf16, sizeof(aBufUtf16), NULL, &Status);
 	if(U_FAILURE(Status))
 		BufferIter = Buffer.append_at(BufferIter, "_NUMBER_");
 	else
@@ -504,7 +504,7 @@ void CLocalization::AppendPercent(dynamic_string& Buffer, int& BufferIter, CLang
 	UChar aBufUtf16[128];
 	
 	UErrorCode Status = U_ZERO_ERROR;
-	unum_formatDouble(pLanguage->m_pPercentFormater, Number, aBufUtf16, sizeof(aBufUtf16), NULL, &Status);
+	unum_formatDouble(pLanguage->m_pPercentFormatter, Number, aBufUtf16, sizeof(aBufUtf16), NULL, &Status);
 	if(U_FAILURE(Status))
 		BufferIter = Buffer.append_at(BufferIter, "_PERCENT_");
 	else
@@ -532,7 +532,7 @@ void CLocalization::AppendDuration(dynamic_string& Buffer, int& BufferIter, CLan
 	icu::TimeUnitAmount* pAmount = new icu::TimeUnitAmount((double) Number, Type, Status);
 	icu::Formattable Formattable;
 	Formattable.adoptObject(pAmount);
-	pLanguage->m_pTimeUnitFormater->format(Formattable, BufUTF16, Status);
+	pLanguage->m_pTimeUnitFormatter->format(Formattable, BufUTF16, Status);
 	
 	if(U_FAILURE(Status))
 		BufferIter = Buffer.append_at(BufferIter, "_DURATION_");

@@ -793,8 +793,6 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 
 	m_EmoteType = EMOTE_PAIN;
 	m_EmoteStop = Server()->Tick() + 500 * Server()->TickSpeed() / 1000;
-
-	GameServer()->SendBroadcast(_("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nHealth: {int:Health}"), m_pPlayer->GetCID(), "Health", &m_Health);
 	return true;
 }
 

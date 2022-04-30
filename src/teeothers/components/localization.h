@@ -86,9 +86,9 @@ public:
 	
 	public:
 		UPluralRules* m_pPluralRules;
-		UNumberFormat* m_pNumberFormater;
-		UNumberFormat* m_pPercentFormater;
-		icu::TimeUnitFormat* m_pTimeUnitFormater;
+		UNumberFormat* m_pNumberFormatter;
+		UNumberFormat* m_pPercentFormatter;
+		icu::TimeUnitFormat* m_pTimeUnitFormatter;
 		
 	public:
 		CLanguage();
