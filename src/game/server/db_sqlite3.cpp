@@ -170,13 +170,7 @@ CSql::~CSql()
 
 bool CSql::Register(const char *Username, const char *Password, int ClientID)
 {
-    int rc = sqlite3_open("Accounts.db", &m_pDB);
-    if (rc)
-    {
-        dbg_msg("SQLite", "can't open database");
-        sqlite3_close(m_pDB);
-        return false;
-    }
+    lock_wait(m_Lock);
 
     char pQuery[555];
     char aHash[64];
@@ -193,23 +187,12 @@ bool CSql::Register(const char *Username, const char *Password, int ClientID)
 
     dbg_msg("SQLite3","Error msg: %s",pErrorMsg);
 
-    m_Lock = lock_create();
-    m_Running = true;
-    thread_init(InitWorker, this);
-
+    lock_unlock(m_Lock);
     return true;
 }
 
 bool CSql::Login(const char *Username, const char *Password, int ClientID)
 {
-    int rc = sqlite3_open("Accounts.db", &m_pDB);
-    if (rc)
-    {
-        dbg_msg("SQLite", "can't open database");
-        sqlite3_close(m_pDB);
-        return false;
-    }
-
     char pQuery[555];
 
     str_format(pQuery, sizeof(pQuery), (char *)"SELECT * FROM Accounts WHERE" \
@@ -218,42 +201,26 @@ bool CSql::Login(const char *Username, const char *Password, int ClientID)
         Username, Password);
 
     char *pErrorMsg;
+    lock_wait(m_Lock);
     sqlite3_exec(m_pDB, pQuery, NULL, NULL, &pErrorMsg);
-
+    lock_unlock(m_Lock);
     dbg_msg("SQLite3","Error msg: %s",pErrorMsg);
-
-    m_Lock = lock_create();
-    m_Running = true;
-    thread_init(InitWorker, this);
-
     return true;
 }
 
 bool CSql::Apply(const char *Username, const char *Password, 
                 int AccID, int m_PlayerState, int m_Level, int m_Exp, unsigned int m_Money, int m_Dmg, int m_Health, int m_Ammoregen, int m_Handle, int m_Ammo, unsigned int m_TurretMoney, int m_TurretLevel, int m_TurretExp, int m_TurretDmg, int m_TurretSpeed, int m_TurretAmmo, int m_TurretShotgun, int m_TurretRange, int m_Freeze, int m_Winner, int m_Luser)
 {
-    int rc = sqlite3_open("Accounts.db", &m_pDB);
-    if (rc)
-    {
-        dbg_msg("SQLite", "can't open database");
-        sqlite3_close(m_pDB);
-        return false;
-    }
-
     char pQuery[300];
     
     str_format(pQuery, sizeof(pQuery), (char *)"UPDATE Accounts SET Exp=%d,Level=%d,Money=%d,Dmg=%d,Health=%d,Ammoregen=%d,Handle=%d,Ammo=%d,PlayerState=%d,TurretMoney=%d,TurretLevel=%d,TurretExp=%d,TurretDmg=%d,TurretSpeed=%d,TurretAmmo=%d,TurretShotgun=%d,TurretRange=%d,Freeze=%d,Winner=%d,Luser=%d WHERE ID=%d;", m_Exp, m_Level, m_Money, m_Dmg, m_Health, m_Ammoregen, m_Handle, m_Ammo, m_PlayerState, m_TurretMoney, m_TurretLevel, m_TurretExp, m_TurretDmg, m_TurretSpeed, m_TurretAmmo, m_TurretShotgun, m_TurretRange, m_Freeze, m_Winner, m_Luser, AccID);
 
     int nRet=0;
     char *pErrorMsg;
-    lock_unlock(m_Lock);
-    sqlite3_exec(m_pDB, pQuery, NULL, NULL, &pErrorMsg);
 
-    dbg_msg("SQLite3","Error msg: %s",pErrorMsg);
-    
-    m_Lock = lock_create();
+    sqlite3_exec(m_pDB, pQuery, NULL, NULL, &pErrorMsg);
     m_Running = true;
     thread_init(InitWorker, this);
-
+    dbg_msg("SQLite3","Error msg: %s",pErrorMsg);
     return true;
 }
