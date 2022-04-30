@@ -21,6 +21,7 @@ MACRO_ALLOC_POOL_ID_IMPL(CPlayer, MAX_CLIENTS)
 
 IServer *CPlayer::Server() const { return m_pGameServer->Server(); }
 
+
 CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 {
 	m_pGameServer = pGameServer;
@@ -32,10 +33,13 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 	
 	m_pAccount = new CAccount(this, m_pGameServer);
 	m_pChatCmd = new CCmd(this, m_pGameServer);	
+	SetLanguage(Server()->GetClientLanguage(ClientID));
+
+	if(m_AccData.m_UserID)
+		m_pAccount->Apply();
 	
 	Reset();
 }
-
 CPlayer::~CPlayer()
 {
 	delete m_pCharacter;
