@@ -407,22 +407,22 @@ void CPlayer::SetTeam(int Team, bool DoChatMsg)
 		return;
 
 	if (!m_AccData.m_UserID)
-		return GameServer()->SendBroadcast("To start the game read /help.", m_ClientID);
+		return GameServer()->SendBroadcast(_("To start the game read /help."), m_ClientID);
 
 	if (m_Team == TEAM_RED && Team != TEAM_SPECTATORS) 
-		return GameServer()->SendBroadcast("Zombies can't change team.", m_ClientID);
+		return GameServer()->SendBroadcast(_("Zombies can't change team."), m_ClientID);
 
 	if (GameServer()->m_pController->ZombStarted() && !GameServer()->m_pController->m_Warmup && Team == TEAM_BLUE)
-		return GameServer()->SendBroadcast("You only can join the human team when round hasn't started.", m_ClientID);
+		return GameServer()->SendBroadcast(_("You only can join the human team when round hasn't started."), m_ClientID);
 	
 	if (Team == TEAM_RED && ((GameServer()->m_pController->ZombStarted() && GameServer()->m_pController->m_Warmup) || !GameServer()->m_pController->ZombStarted()))
-		return GameServer()->SendBroadcast("Zombie will be chosen randomly.", m_ClientID);
+		return GameServer()->SendBroadcast(_("Zombie will be chosen randomly."), m_ClientID);
 
 	if (m_Team == TEAM_BLUE && GameServer()->m_pController->ZombStarted())
-		return GameServer()->SendBroadcast("You can't join the zombie team.", m_ClientID);
+		return GameServer()->SendBroadcast(_("You can't join the zombie team."), m_ClientID);
 	
 	if (m_Team == TEAM_RED && GameServer()->m_pController->NumZombs() < 2 && GameServer()->m_pController->ZombStarted())
-		return GameServer()->SendBroadcast("You are the only zombie.", m_ClientID);
+		return GameServer()->SendBroadcast(_("You are the only zombie."), m_ClientID);
 
 	char aBuf[64];
 	if(DoChatMsg)

@@ -2,6 +2,7 @@
 #include <engine/shared/config.h>
 #include <game/generated/protocol.h>
 #include <game/server/gamecontext.h>
+#include <teeothers/components/localization.h>
 #define M_PI 3.14159265358979323846
 
 #include "turret.h"
@@ -197,9 +198,7 @@ void CTurret::Fire()
 					
 						if(g_Config.m_SvChatDestroyWall)
 						{
-							char aBuf[64];
-							str_format(aBuf, sizeof(aBuf), "%s destroyed turret wall hearted", Server()->ClientName(m_Owner));
-							GameServer()->SendChatTarget(-1, aBuf);
+							GameServer()->SendChatTarget(-1, _("{str:Name} destroyed turret wall hearted"), "Name", Server()->ClientName(m_Owner));
 						}
 					
 						GameServer()->CreateSound(pClosest->m_Pos, 35);
@@ -257,10 +256,7 @@ void CTurret::ExperienceTAdd()
 
 		if(pPlayer->m_AccData.m_UserID)
 			pPlayer->m_pAccount->Apply();
-
-		char SendExp[64];
-		str_format(SendExp, sizeof(SendExp), "Turret's Level-Up! Your turret's level now is: %d", pPlayer->m_AccData.m_TurretLevel);
-		GameServer()->SendChatTarget(m_Owner, SendExp);
+		GameServer()->SendChatTarget(m_Owner, ("Turret's Level-Up! Your turret's level now is: {int:TurretLevel}"), "TurretLevel", &pPlayer->m_AccData.m_TurretLevel);
 	}
 }
 
