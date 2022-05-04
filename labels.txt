@@ -1,0 +1,203 @@
+Please wait for the round to end!
+Use: /login <username> <password>
+Username / Password must contain 4-15 characters
+Please wait for the round to end!
+Use /register <username> <password>'
+Username and Password must contain 4-15 characters
+Username and Password must be different
+Use /sd <idsound>
+You aren't logged in!
+Please wait for the round to end!
+You can't log out as the last zombie!
+Wait for the round to start!
+Logged out.
+Use /login <username> <password> to login again
+You are not logged in! Use /account for more information
+Use /upgr <dmg>, <hp>, <handle>, <ammoregen>, <ammo>, <stats> to upgrade stats
+Maximum handle level already reached (300).
+Insufficient money (1 needed).
+New handle: {int:handle}, Your money: {int:money}
+Maximum damage level already reached (21).
+Insufficient money (1 needed).
+New damage: {int:damage}, Your money: {int:Money}
+Maximum HP level already reached (100).
+Insufficient money (1 needed).
+New HP: {int:HP}, Maximum HP: {int:MaximumHP}, Your money: {int:Money}
+Maximum ammo regen level already reached (60).
+Insufficient money (1 needed).
+New ammo regen: {int:Ammoregen}, Your money: {int:Money}
+Maximum ammo level already reached (20).
+Insufficient money (10 needed).
+New ammo: {int:Ammo}, Your money: {int:Money}
+~~~~~~~~ ! Upgr stats details ! ~~~~~~~~
+Damage: {int:dmg}
+HP: {int:hp}
+Handle: {int:handle}
+Ammo regen: {int:ammoregen}
+Ammo: {int:ammo}
+~~~~~~~~ ! Upgr stats details ! ~~~~~~~~
+This type doesn't exist.
+You are not logged in! Use /account for more information!
+Use /turret info
+/turret info - show information
+/turret help - show help
+/turret stats - view stats upgrade turrets
+/turret speed - upgrade turret speed (1 turret money)
+/turret dmg - upgrade turret damage (1 turret money)
+/turret ammo - upgrade turret ammo (1 turret money)
+/turret ammoregen - upgrade turret ammo (1 turret money)
+/turret range - upgrade turret range (1 turret money)
+Turret could be placed via Ghost Emoticon
+Turrets can have 3 different weapons
+Gun Turret: Shoots once per sec at enemy
+Shotgun Turret: Shoots once per 3 sec at enemy
+Laser Turret: places a laser each 40 sec if the zombie reach it's line
+Maximal turret damage level!
+You have not turret money counts!
+Maximal turret speed level!
+You have not turret money counts!
+Your turret's speed is upgraded, now it is: {int:TurretSpeed}
+Maximal turret ammo level!
+You have not turret money counts!
+Your turret's gun is upgraded, now it is: {int:TurretAmmo}
+Maximal turret ammoregen level!
+You have not turret money counts!
+Your turret's ammoregen is upgraded, now it is: {int:TurretShotgun}
+Maximal turret range level!
+You have not turret money counts!
+Your turret's range is upgraded, now it is: {int:TurretRange}
+---- Turret ----
+Lvl: {int:Lvl}
+Exp: {int:Exp}
+Money: {int:Money}
+Speed: {int:Speed}
+Damage: {int:Damage}
+Ammo: {int:Ammo}
+AmmoRegen: {int:AmmoRegen}
+Range: {int:Range}
+---- Turret ----
+No such turret upgrade: '{str:wtf}'!
+You are not logged in! Type '/account' for more information!
+~~~~~~~~ ! Your account details ! ~~~~~~~~
+Login: {str:Username}
+Password: {str:Password}
+Mailbox: <no mailbox> (no active)
+Level: {int:Level}
+Exp: {int:Exp}
+Money: {int:Money}
+Freeze: {int:Freeze}
+You can change your password with the command:
+/password <new password>
+~~~~~~~~ ! Your account details ! ~~~~~~~~
+--- List IDs ---
+You are not logged in! Type '/account' for more information!
+Use \"/password <new password>\"
+--- ViP ---
+ViP: Get 3x Exp & 2x Money & 5 For killing spree
+Invis: +1 secounds, InvisCD: 20 secounds
+/prefix = +5 ammo + Special Dmg & 5 For killing spree
+1 month VIP = 0euros || 3 months VIP = 0euros || LifeTime VIP = 0euros
+Payments: Name, name
+Skype: nope, Name: nope
+--- SuperViP ---
+SuperVIP: Get 5x Exp & 3x Money & 5 Score4Life & 3 For killing spree
+Invis: +3 secounds, InvisCD: 10 secounds
+/superprefix = Special Dmg + 15 Ammo, Access to commands:
+/resetupgr - Reset your upgr & /supervipmsg - Special messge
+1 month SuperVIP = 0euros || 3 months UltimateVIP = 0euros || LifeTime UltimateVIP = 0euros
+Payments: Name, name
+Skype: nope, Name: nope
+--- UltimateViP ---
+UltimateVIP: Get 7x Exp & 5x Money & 5 Score4Life & 2 For killing spree
+Invis: +5 secounds, InvisCD: 5 secounds
+/resetupgr - Reset your upgr & /ultimatemsg - Special message
+1 month UltimateVIP = 0euros || 3 months UltimateVIP = 0euros || LifeTime UltimateVIP = 0euros
+Payments: Name, name
+Skype: nope, Name: nope
+~~~~~~~~ Welcome to info! ~~~~~~~~
+Owner: {str:Owner} / Skype: {str:Skype}
+Panic mod by Kurosio, helper: {str:name}
+~~~~~~~~ Welcome to info! ~~~~~~~~
+~~~~~~~~ Welcome to help! ~~~~~~~~
+/account - information & help account system
+/news - for see what news in server
+/rules - for read the rules Panic
+/pm - send personal message to player
+/cmdlist - commands server
+/vip - get info vip status
+/supervip - get info supervip status
+/ultimatevip - get info ultimatevip status
+/turret info - info about turrets
+/levels - info about level
+/shop - shop score tees
+~~~~~~~~ Welcome to help! ~~~~~~~~
+Since 40: your shotgun spread growing by 1 bullet per 10 levels
+Since 50: +10 ammo
+Since 100: +10 ammo
+--- Account ---
+/register <name> <pass> - Register new account
+/login <name> <pass> - Login to your account
+/logout - Logout from your account
+/password - Change account password
+--- Account ---
+----- Shop -----
+/range [10 score] - Buy range zombie hammer
+/heart [20 score] - Buy 1 heart if you zombie team
+/jump [3 score] - Buy 1 other jump
+Added basic ranked system
+/kick <id> - kick player ids
+/freeze <id> - freeze/unfreeze player
+/idlist - view ids players
+~~~~~~~~ Welcome to cmdlist! ~~~~~~~~
+/register, /login, /logout - account system
+/rules, /help, /info - information
+/stats, /upgr - upgrade system
+/shop - shop score tees
+/idlist - List IDs players
+#This command police group
+#/policehelp - help for police group
+~~~~~~~~ Welcome to cmdlist! ~~~~~~~~
+1. Don't farm XP (freeze acc)
+2. Don't insult (mute/ban 1-7 day)
+3. Don't use bots (perma ban)
+4. Don't self-kill (same as farming)
+You are not logged in! Type '/account' for more information!
+Use only if you alive!
+Please wait for the round to end!
+Available only zombies!
+Insufficient score (20).
+Done!
+You are not logged in! Use /account for more information
+Use only if you are alive!
+Please wait for the round to end.
+Insufficient score (3).
+Done!
+You are not logged in! Use /account for more information!
+Use only if you are alive!
+Please wait for the round to end.
+Available only to zombies!
+Insufficient score (10).
+Done!
+Use /w <id> <text>
+Please use: /setlvl <id> <level>
+There is no such player!'
+The player is not logged in account!
+You had to change your level!'
+Please use: /setmoney <id> <money>
+There is no such player!'
+The player is not logged in account!
+You had to change your level!'
+Please use: /freeze <id>
+You can not freeze your account!
+There is no such player!'
+The player is not logged in account!
+Please use: /kick <id>
+There is no such player!'
+You was kicked by the Police!
+Please use: /setgroup <id> <groupid>
+Group ID: 0 - Removed, 1 - Police, 2 - VIP, 3 - Helper
+There is no such player!
+The player is not logged in account!
+This player already no in group!
+Group ID not found!
+Wrong command. Use /cmdlist

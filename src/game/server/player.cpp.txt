@@ -1,0 +1,8 @@
+Successfully! Your new level {int:Level}\n/ Upgrade counts {int:Money}
+To start the game read /help.
+Zombies can't change team.
+You only can join the human team when round hasn't started.
+Zombie will be chosen randomly.
+You can't join the zombie team.
+You are the only zombie.
+You are now a zombie! Eat some brains.

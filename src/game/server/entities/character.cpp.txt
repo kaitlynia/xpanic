@@ -1,0 +1,6 @@
+The second point can not be set here
+\n\n\n\n\n\n\n\n\n\n\n\n\nInvis: {int:Tick}.{int:Tick1}
+Exp {int:Exp}/{int:Level}
+{str:Who} is on killing spree!
+You have unlimited air jumps
+You don't have unlimited air jumps

@@ -591,7 +591,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		if (!GameServer()->m_apPlayers[cid2]) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), _("There is no such player!'"));
 
 		char buf[64];
-		str_format(buf, sizeof(buf), _("%s kicked by the Police"), GameServer()->Server()->ClientName(cid2));
+		str_format(buf, sizeof(buf), "%s kicked by the Police", GameServer()->Server()->ClientName(cid2));
 		GameServer()->SendChatTarget(-1, buf);		
 			
 		GameServer()->Server()->Kick(cid2, _("You was kicked by the Police!"));			

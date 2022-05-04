@@ -1,0 +1,5 @@
+Zombie: {str:Name} (WIN)
+Win: {int:winner} / Lose: {int:lose} ({percent:kofs})
+Zombie: {str:Name} (LOSE)
+Win: {int:winner} / Lose: {int:lose} ({percent:kofs})
+

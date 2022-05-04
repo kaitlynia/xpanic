@@ -1,0 +1,37 @@
+Account already exists.
+~~~~~~~~ ! Registered ! ~~~~~~~~
+Username: {str:Username}
+Password: {str:Password}
+Now use the /login {str:u} {str:p}
+~~~~~~~~ ! Registered ! ~~~~~~~~
+Successfully logged in! Have fun while playing!
+This account does not exist. Use /help
+Use /register <username> <password> to create an account
+Use /login <username> <password> to rejoin
+Use /cmdlist' for a list of commands
+No player with such id
+Attempt to send a personal message to yourself -_-
+pm from '{str:Name}': {str:text}
+pm to '{str:Name}': {str:text}
+Spectators aren't allowed to start a vote.
+Wait for current vote to end before calling a new one.
+You must wait {int:sec} seconds before making another vote
+Invalid option
+Server does not allow voting to kick players
+Invalid client id to kick
+You can't kick yourself
+You can't kick moderators
+You can kick only your team member
+Server does not allow voting to move players to spectators
+Invalid client id to move
+You can't move yourself
+You can only move your team member to specators
+Only {int:Num} active players are allowed
+Invalid spectator id used
+With not the wall!
+This Small distance!
+With not the wall!
+This Small distance!
+Language successfully switched to English
+Unknown language
+Available languages: {str:ListOfLanguage}
