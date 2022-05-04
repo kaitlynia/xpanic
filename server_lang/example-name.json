@@ -874,6 +874,6 @@
 	{
 		"key": "Your turret's damage is upgraded, now it is: {int:TurretDmg}",
 		"value": "Your turret's damage is upgraded, now it is: {int:TurretDmg}"
-	},
+	}
 ]
 }
