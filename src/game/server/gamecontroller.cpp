@@ -13,6 +13,7 @@
 #include "entities/zdoor.h"
 #include <game/layers.h>
 
+#include <teeothers/components/localization.h>
 
 IGameController::IGameController(class CGameContext *pGameServer)
 {
@@ -221,10 +222,8 @@ void IGameController::EndRound()
 
 						char aBuf[64];
 						GameServer()->SendChatTarget(-1, "----------------------------------");
-						str_format(aBuf, sizeof(aBuf), "Zombie: %s (WIN)", Server()->ClientName(m_LastZomb));
-						GameServer()->SendChatTarget(-1, aBuf);
-						str_format(aBuf, sizeof(aBuf), "Win: %d / Lose: %d (%.1f)", GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Winner, GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Luser, kofs);
-						GameServer()->SendChatTarget(-1, aBuf);
+						GameServer()->SendChatTarget(-1, _("Zombie: {str:Name} (WIN)"), "Name", Server()->ClientName(m_LastZomb));
+						GameServer()->SendChatTarget(-1, _("Win: {int:winner} / Lose: {int:lose} ({percent:kofs})"), "winner", &GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Winner, "lose", &GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Luser, "kofs", &kofs);
 						GameServer()->SendChatTarget(-1, "----------------------------------");
 					}
 				}
@@ -251,11 +250,10 @@ void IGameController::EndRound()
 
 						char aBuf[64];
 						GameServer()->SendChatTarget(-1, "----------------------------------");
-						str_format(aBuf, sizeof(aBuf), "Zombie: %s (LOSE)", Server()->ClientName(m_LastZomb));
-						GameServer()->SendChatTarget(-1, aBuf);
-						str_format(aBuf, sizeof(aBuf), "Win: %d / Lose: %d (%.1f)", GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Winner, GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Luser, kofs);
-						GameServer()->SendChatTarget(-1, aBuf);
+						GameServer()->SendChatTarget(-1, _("Zombie: {str:Name} (LOSE)"), "Name", Server()->ClientName(m_LastZomb));
+						GameServer()->SendChatTarget(-1, _("Win: {int:winner} / Lose: {int:lose} ({percent:kofs})"), "winner", &GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Winner, "lose", &GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Luser, "kofs", &kofs);
 						GameServer()->SendChatTarget(-1, "----------------------------------");
+					
 					}
 				}
 			m_aTeamscore[TEAM_BLUE] = 100;
@@ -589,7 +587,7 @@ void IGameController::ResetZ()
 		if (GameServer()->m_apPlayers[i])
 			GameServer()->m_apPlayers[i]->ResetZomb();
 	}
-	GameServer()->SendBroadcast("", -1);
+	GameServer()->SendBroadcast(_(""), -1);
 	ResetDoors();
 }
 

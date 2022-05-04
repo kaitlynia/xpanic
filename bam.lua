@@ -140,6 +140,7 @@ AddDependency(server_content_source, server_content_header)
 
 nethash = CHash("src/game/generated/nethash.cpp", "src/engine/shared/protocol.h", "src/game/generated/protocol.h", "src/game/tuning.h", "src/game/gamecore.cpp", network_header)
 
+icu_depends = {}
 client_link_other = {}
 client_depends = {}
 server_link_other = {}
@@ -161,6 +162,16 @@ if family == "windows" then
 		table.insert(client_depends, CopyToDirectory(".", "other/opus/windows/lib32/libogg-0.dll"))
 		table.insert(client_depends, CopyToDirectory(".", "other/opus/windows/lib32/libopus-0.dll"))
 		table.insert(client_depends, CopyToDirectory(".", "other/opus/windows/lib32/libopusfile-0.dll"))
+
+		if config.compiler.driver == "cl" then
+			table.insert(icu_depends, CopyToDirectory(".", "other/icu/vc/lib32/icudt53.dll"))
+			table.insert(icu_depends, CopyToDirectory(".", "other/icu/vc/lib32/icuin53.dll"))
+			table.insert(icu_depends, CopyToDirectory(".", "other/icu/vc/lib32/icuuc53.dll"))
+		elseif config.compiler.driver == "gcc" then
+			table.insert(icu_depends, CopyToDirectory(".", "other/icu/gcc/lib32/icudt53.dll"))
+			table.insert(icu_depends, CopyToDirectory(".", "other/icu/gcc/lib32/icuin53.dll"))
+			table.insert(icu_depends, CopyToDirectory(".", "other/icu/gcc/lib32/icuuc53.dll"))
+		end
 	else
 		table.insert(client_depends, CopyToDirectory(".", "other/freetype/lib64/freetype.dll"))
 		table.insert(client_depends, CopyToDirectory(".", "other/sdl/lib64/SDL.dll"))
@@ -175,6 +186,17 @@ if family == "windows" then
 		table.insert(client_depends, CopyToDirectory(".", "other/opus/windows/lib64/libogg-0.dll"))
 		table.insert(client_depends, CopyToDirectory(".", "other/opus/windows/lib64/libopus-0.dll"))
 		table.insert(client_depends, CopyToDirectory(".", "other/opus/windows/lib64/libopusfile-0.dll"))
+
+		-- Add ICU because its a HAVE to
+		if config.compiler.driver == "cl" then
+			table.insert(icu_depends, CopyToDirectory(".", "other/icu/vc/lib64/icudt53.dll"))
+			table.insert(icu_depends, CopyToDirectory(".", "other/icu/vc/lib64/icuin53.dll"))
+			table.insert(icu_depends, CopyToDirectory(".", "other/icu/vc/lib64/icuuc53.dll"))
+		elseif config.compiler.driver == "gcc" then
+			table.insert(icu_depends, CopyToDirectory(".", "other/icu/gcc/lib64/icudt53.dll"))
+			table.insert(icu_depends, CopyToDirectory(".", "other/icu/gcc/lib64/icuin53.dll"))
+			table.insert(icu_depends, CopyToDirectory(".", "other/icu/gcc/lib64/icuuc53.dll"))
+		end	
 	end
 	table.insert(server_sql_depends, CopyToDirectory(".", "other/mysql/vc2005libs/mysqlcppconn.dll"))
 	table.insert(server_sql_depends, CopyToDirectory(".", "other/mysql/vc2005libs/libmysql.dll"))
@@ -255,11 +277,22 @@ function build(settings)
 	-- set some platform specific settings
 	if family == "unix" then
 		if platform == "macosx" then
+			settings.cc.flags_cxx:Add("-stdlib=libc++")
+			settings.cc.includes:Add("/usr/local/opt/icu4c/include")
+			settings.link.libs:Add("icui18n")
+			settings.link.libs:Add("icuuc")
+			settings.link.libs:Add("c++")
+			settings.link.libpath:Add("/usr/local/opt/icu4c/lib")
 			settings.link.frameworks:Add("Carbon")
 			settings.link.frameworks:Add("AppKit")
-			settings.link.libs:Add("crypto")
 		else
 			settings.link.libs:Add("pthread")
+			-- add ICU for linux
+			if ExecuteSilent("pkg-config icu-uc icu-i18n") == 0 then
+			end
+
+			settings.cc.flags:Add("`pkg-config --cflags icu-uc icu-i18n`")
+			settings.link.flags:Add("`pkg-config --libs icu-uc icu-i18n`")
 		end
 
 		if platform == "solaris" then
@@ -273,6 +306,9 @@ function build(settings)
 		settings.link.libs:Add("ole32")
 		settings.link.libs:Add("shell32")
 		settings.link.libs:Add("advapi32")
+
+		-- add ICU also here
+		settings.cc.includes:Add("other\\icu\\include")
 	end
 
 	-- compile zlib if needed
@@ -292,6 +328,8 @@ function build(settings)
 	pnglite = Compile(settings, Collect("src/engine/external/pnglite/*.c"))
 	jsonparser = Compile(settings, Collect("src/engine/external/json-parser/*.c"))
 	md5 = Compile(settings, "src/engine/external/md5/md5.c")
+	settings.cc.includes:Add("src/engine/external/sqlite3")
+	sqlite3 = Compile(settings, Collect("src/engine/external/sqlite3/*.c"))
 	if config.websockets.value then
 		libwebsockets = Compile(settings, Collect("src/engine/external/libwebsockets/*.c"))
 	end
@@ -314,6 +352,8 @@ function build(settings)
 			client_settings.link.libs:Add("X11")
 			client_settings.link.libs:Add("GL")
 			client_settings.link.libs:Add("GLU")
+			server_settings.link.libs:Add("ssl")
+			server_settings.link.libs:Add("crypto")
 		end
 
 	elseif family == "windows" then
@@ -330,6 +370,27 @@ function build(settings)
 		if string.find(settings.config_name, "sql") then
 			server_settings.link.libpath:Add("other/mysql/vc2005libs")
 			server_settings.link.libs:Add("mysqlcppconn")
+		end
+
+		-- Add ICU because its a HAVE to
+		if platform == "win32" then
+			if config.compiler.driver == "cl" then
+				server_settings.link.libpath:Add("other/icu/vc/lib32")
+			elseif config.compiler.driver == "gcc" then
+				server_settings.link.libpath:Add("other/icu/gcc/lib32")
+			end
+			server_settings.link.libs:Add("icudt")
+			server_settings.link.libs:Add("icuin")
+			server_settings.link.libs:Add("icuuc")
+		else
+			if config.compiler.driver == "cl" then
+				server_settings.link.libpath:Add("other/icu/vc/lib64")
+			elseif config.compiler.driver == "gcc" then
+				server_settings.link.libpath:Add("other/icu/gcc/lib64")
+			end
+			server_settings.link.libs:Add("icudt")
+			server_settings.link.libs:Add("icuin")
+			server_settings.link.libs:Add("icuuc")
 		end
 	end
 
@@ -350,6 +411,8 @@ function build(settings)
 	engine = Compile(engine_settings, Collect("src/engine/shared/*.cpp", "src/base/*.c"))
 	client = Compile(client_settings, Collect("src/engine/client/*.cpp"))
 	server = Compile(server_settings, Collect("src/engine/server/*.cpp"))
+	teeothers = Compile(server_settings, Collect("src/teeothers/*.cpp", "src/teeothers/components/*.cpp", "src/teeothers/system/*.cpp"))
+
 
 	versionserver = Compile(settings, Collect("src/versionsrv/*.cpp"))
 	masterserver = Compile(settings, Collect("src/mastersrv/*.cpp"))
@@ -380,12 +443,13 @@ function build(settings)
 	end
 
 	-- build client, server, version server and master server
-	client_exe = Link(client_settings, "DDNet", game_shared, game_client,
+	client_exe = Link(client_settings, "xPanic-Editor", game_shared, game_client,
 		engine, client, game_editor, zlib, pnglite, wavpack,
 		client_link_other, client_osxlaunch, jsonparser, libwebsockets, md5, client_notification)
 
-	server_exe = Link(server_settings, "DDNet-Server", engine, server,
-		game_shared, game_server, zlib, server_link_other, libwebsockets, md5)
+	server_exe = Link(server_settings, "xPanic-Server", engine, server,
+		game_shared, game_server, zlib, server_link_other, libwebsockets, 
+		md5, icu_depends, teeothers, jsonparser, sqlite3)
 
 	serverlaunch = {}
 	if platform == "macosx" then

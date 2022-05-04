@@ -15,6 +15,7 @@
 #include "mine.h"
 #include "turret.h"
 
+#include <teeothers/components/localization.h>
 MACRO_ALLOC_POOL_ID_IMPL(CCharacter, MAX_CLIENTS)
 
 CCharacter::CCharacter(CGameWorld *pWorld)
@@ -364,7 +365,7 @@ void CCharacter::FireWeapon()
 				if (m_RiflePos == m_Pos)
 				{
 					m_aWeapons[WEAPON_RIFLE].m_Ammo = 2;
-					GameServer()->SendChatTarget(m_pPlayer->GetCID(), "The second point can not be set here");
+					GameServer()->SendChatTarget(m_pPlayer->GetCID(), _("The second point can not be set here"));
 					m_RiflePos = vec2(0, 0);
 					return;
 				}
@@ -521,9 +522,9 @@ void CCharacter::Tick()
 		ITickSecond--;
 		IhammerTick--;
 
-		char aBuf[26];
-		str_format(aBuf, sizeof(aBuf), "\n\n\n\n\n\n\n\n\n\n\n\n\nInvis: %d.%d", IhammerTick/Server()->TickSpeed() , ITickSecond*2);
-		GameServer()->SendBroadcast(aBuf, m_pPlayer->GetCID());
+		int Tick = IhammerTick/Server()->TickSpeed();
+		int Tick1 = ITickSecond*2;
+		GameServer()->SendBroadcast(_("\n\n\n\n\n\n\n\n\n\n\n\n\nInvis: {int:Tick}.{int:Tick1}"), m_pPlayer->GetCID(), "Tick", &Tick, "Tick1", &Tick1);
 		if (!IhammerTick)
 		{
 			GameServer()->SendBroadcast(" ", m_pPlayer->GetCID());
@@ -669,9 +670,7 @@ void CCharacter::ExperienceAdd(int Exp, int ClientID)
 	}
 	else
 	{
-		char SendExp[64];
-		str_format(SendExp, sizeof(SendExp), "Exp %d/%d", pPlayer->m_AccData.m_Exp, pPlayer->m_AccData.m_Level);
-		GameServer()->SendChatTarget(ClientID, SendExp);
+		GameServer()->SendChatTarget(ClientID, _("Exp {int:Exp}/{int:Level}"), "Exp", pPlayer->m_AccData.m_Exp, "Level", pPlayer->m_AccData.m_Level);
 	}
 }
 
@@ -781,7 +780,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 			{
 				char aBuf[48];
 				str_format(aBuf, sizeof(aBuf), "%s is on killing spree!", Server()->ClientName(From));
-				GameServer()->SendChatTarget(-1, aBuf);
+				GameServer()->SendChatTarget(-1, _("{str:Who} is on killing spree!"), "Who", Server()->ClientName(From));
 			}
 		}
 		
@@ -794,10 +793,6 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 
 	m_EmoteType = EMOTE_PAIN;
 	m_EmoteStop = Server()->Tick() + 500 * Server()->TickSpeed() / 1000;
-
-	char aBuf[32];
-	str_format(aBuf, sizeof(aBuf), "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nHealth: %d", m_Health);
-	GameServer()->SendBroadcast(aBuf, m_pPlayer->GetCID());
 	return true;
 }
 
@@ -893,7 +888,7 @@ void CCharacter::Snap(int SnappingClient)
 	if(m_pPlayer->GetCID() == SnappingClient || SnappingClient == -1 ||
 		(!g_Config.m_SvStrictSpectateMode && m_pPlayer->GetCID() == GameServer()->m_apPlayers[SnappingClient]->m_SpectatorID))
 	{
-		pCharacter->m_Health = m_Health;
+		pCharacter->m_Health = round((float)m_Health / (float)m_pPlayer->m_AccData.m_Health * 10.f);
 		pCharacter->m_Armor = m_Armor;
 		if(m_aWeapons[m_Core.m_ActiveWeapon].m_Ammo > 0)
 			pCharacter->m_AmmoCount = m_aWeapons[m_Core.m_ActiveWeapon].m_Ammo;
@@ -1111,7 +1106,7 @@ void CCharacter::HandleTiles(int Index)
 	// unlimited air jumps
 	if(((m_TileIndex == TILE_SUPER_START) || (m_TileFIndex == TILE_SUPER_START)) && !m_SuperJump)
 	{
-		GameServer()->SendChatTarget(GetPlayer()->GetCID(),"You have unlimited air jumps");
+		GameServer()->SendChatTarget(GetPlayer()->GetCID(), _("You have unlimited air jumps"));
 		m_SuperJump = true;
 		if (m_Core.m_Jumps == 0)
 		{
@@ -1121,7 +1116,7 @@ void CCharacter::HandleTiles(int Index)
 	}
 	else if(((m_TileIndex == TILE_SUPER_END) || (m_TileFIndex == TILE_SUPER_END)) && m_SuperJump)
 	{
-		GameServer()->SendChatTarget(GetPlayer()->GetCID(), "You don't have unlimited air jumps");
+		GameServer()->SendChatTarget(GetPlayer()->GetCID(), _("You don't have unlimited air jumps"));
 		m_SuperJump = false;
 		if (m_Core.m_Jumps == 0)
 		{

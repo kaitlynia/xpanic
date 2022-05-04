@@ -15,6 +15,8 @@
 #include "gameworld.h"
 #include "player.h"
 
+#include "db_sqlite3.h"
+
 #ifdef _MSC_VER
 typedef __int32 int32_t;
 typedef unsigned __int32 uint32_t;
@@ -142,17 +144,18 @@ public:
 
 	// network
 	void CallVote(int ClientID, const char *aDesc, const char *aCmd, const char *pReason, const char *aChatmsg);
-	void SendChatTarget(int To, const char *pText);
+	void SendChatTarget(int To, const char *pText, ...);
 	void SendChatTeam(int Team, const char *pText);
 	void SendChat(int ClientID, int Team, const char *pText, int SpamProtectionClientID = -1);
 	void SendEmoticon(int ClientID, int Emoticon);
 	void SendWeaponPickup(int ClientID, int Weapon);
-	void SendBroadcast(const char *pText, int ClientID);
+	void SendBroadcast(const char *pText, int ClientID, ...);
 	void SendTuningParams(int ClientID, int Zone = 0);
 
 	struct CVoteOptionServer *GetVoteOption(int Index);
 	void ProgressVoteOptions(int ClientID);
 
+	void SetClientLanguage(int ClientID, const char *pLanguage);
 	//
 	//void SwapTeams();
 
@@ -237,6 +240,8 @@ private:
 	static void ConMutes(IConsole::IResult *pResult, void *pUserData);
 
 	static void ConList(IConsole::IResult *pResult, void *pUserData);
+	
+	static void ConLanguage(IConsole::IResult *pResult, void *pUserData);
 
 	enum
 	{
@@ -274,6 +279,63 @@ public:
 
 	int m_ChatResponseTargetID;
 	int m_ChatPrintCBIndex;
+	
+	// - SQL
+	CSql *m_pDatabase;
+	void Register(const char *Username, const char *Password, int ClientID); // Register account
+	void Login(const char *Username, const char *Password, int ClientID); // Login account
+	bool Apply(const char *Username, const char *Password, const char *Language, int AccID, 
+				int m_PlayerState, int m_Level, int m_Exp, unsigned int m_Money, int m_Dmg, int m_Health, int m_Ammoregen, int m_Handle, int m_Ammo, unsigned int m_TurretMoney, int m_TurretLevel, int m_TurretExp, int m_TurretDmg, int m_TurretSpeed, int m_TurretAmmo, int m_TurretShotgun, int m_TurretRange, int m_Freeze, int m_Winner, int m_Luser); // Apply account
+	int GetUID(const char *Username, const char *Password); // Get ID
+};
+
+class CQueryBase : public CQuery
+{
+public:
+	int m_ClientID;
+	const char *Username;
+	const char *Password;
+	const char *Language;
+	CGameContext *m_pGameServer;
+};
+
+class CQueryRegister: public CQueryBase
+{
+	void OnData();
+public:
+};
+
+class CQueryLogin: public CQueryBase
+{
+	void OnData();
+public:
+
+};
+
+class CQueryApply: public CQueryBase
+{
+	void OnData();
+public:
+	int m_PlayerState;
+	int m_Level;
+	int m_Exp; 
+	unsigned int m_Money;
+	int m_Dmg;
+	int m_Health;
+	int m_Ammoregen;
+	int m_Handle;
+	int m_Ammo; 
+	unsigned int m_TurretMoney;
+	int m_TurretLevel;
+	int m_TurretExp;
+	int m_TurretDmg;
+	int m_TurretSpeed;
+	int m_TurretAmmo;
+	int m_TurretShotgun;
+	int m_TurretRange;
+	int m_Freeze;
+	int m_Winner;
+	int m_Luser;
 };
 
 inline int64_t CmaskAll() { return -1LL; }

@@ -15,9 +15,12 @@
 #include "entities/cmds.h"
 #include <stdio.h>
 
+#include <teeothers/components/localization.h>
+
 MACRO_ALLOC_POOL_ID_IMPL(CPlayer, MAX_CLIENTS)
 
 IServer *CPlayer::Server() const { return m_pGameServer->Server(); }
+
 
 CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 {
@@ -30,13 +33,13 @@ CPlayer::CPlayer(CGameContext *pGameServer, int ClientID, int Team)
 	
 	m_pAccount = new CAccount(this, m_pGameServer);
 	m_pChatCmd = new CCmd(this, m_pGameServer);	
-	
+	SetLanguage(Server()->GetClientLanguage(ClientID));
+
 	if(m_AccData.m_UserID)
 		m_pAccount->Apply();
 	
 	Reset();
 }
-
 CPlayer::~CPlayer()
 {
 	delete m_pCharacter;
@@ -102,23 +105,21 @@ void CPlayer::Tick()
 	if (m_ChatScore > 0)
 		m_ChatScore--;
 
-	if (m_AccData.m_UserID && m_AccData.m_Exp >= m_AccData.m_Level)
+	if (m_AccData.m_UserID && m_AccData.m_Exp >= m_AccData.m_Level*3)
 	{
 		m_AccData.m_Money++;
 		m_AccData.m_Exp -= m_AccData.m_Level;
 		m_AccData.m_Level++;
 		if (m_AccData.m_Exp < m_AccData.m_Level)
 		{
-			if (m_AccData.m_UserID)
-				m_pAccount->Apply();
 
 			char SendLVL[64];
-			str_format(SendLVL, sizeof(SendLVL), "Successfully! Your new level %d\n/ Upgrade counts %d", m_AccData.m_Level, m_AccData.m_Money);
-			GameServer()->SendChatTarget(m_ClientID, SendLVL);
+			GameServer()->SendChatTarget(m_ClientID, _("Successfully! Your new level {int:Level}\n/ Upgrade counts {int:Money}"), "Level", &m_AccData.m_Level, "Money", &m_AccData.m_Money);
 		}
 	}
 	
 	Server()->SetClientScore(m_ClientID, m_Score);
+	Server()->SetClientLanguage(m_ClientID, m_aLanguage);
 
 	// do latency stuff
 	{
@@ -295,9 +296,6 @@ void CPlayer::FakeSnap(int SnappingClient)
 
 void CPlayer::OnDisconnect(const char *pReason)
 {
-	if(m_AccData.m_UserID)
-		m_pAccount->Reset();
-	
 	KillCharacter();
 
 	if(GameServer()->m_pController->NumZombs() == 1 && GetTeam() == TEAM_RED
@@ -409,22 +407,22 @@ void CPlayer::SetTeam(int Team, bool DoChatMsg)
 		return;
 
 	if (!m_AccData.m_UserID)
-		return GameServer()->SendBroadcast("To start the game read /help.", m_ClientID);
+		return GameServer()->SendBroadcast(_("To start the game read /help."), m_ClientID);
 
 	if (m_Team == TEAM_RED && Team != TEAM_SPECTATORS) 
-		return GameServer()->SendBroadcast("Zombies can't change team.", m_ClientID);
+		return GameServer()->SendBroadcast(_("Zombies can't change team."), m_ClientID);
 
 	if (GameServer()->m_pController->ZombStarted() && !GameServer()->m_pController->m_Warmup && Team == TEAM_BLUE)
-		return GameServer()->SendBroadcast("You only can join the human team when round hasn't started.", m_ClientID);
+		return GameServer()->SendBroadcast(_("You only can join the human team when round hasn't started."), m_ClientID);
 	
 	if (Team == TEAM_RED && ((GameServer()->m_pController->ZombStarted() && GameServer()->m_pController->m_Warmup) || !GameServer()->m_pController->ZombStarted()))
-		return GameServer()->SendBroadcast("Zombie will be chosen randomly.", m_ClientID);
+		return GameServer()->SendBroadcast(_("Zombie will be chosen randomly."), m_ClientID);
 
 	if (m_Team == TEAM_BLUE && GameServer()->m_pController->ZombStarted())
-		return GameServer()->SendBroadcast("You can't join the zombie team.", m_ClientID);
+		return GameServer()->SendBroadcast(_("You can't join the zombie team."), m_ClientID);
 	
 	if (m_Team == TEAM_RED && GameServer()->m_pController->NumZombs() < 2 && GameServer()->m_pController->ZombStarted())
-		return GameServer()->SendBroadcast("You are the only zombie.", m_ClientID);
+		return GameServer()->SendBroadcast(_("You are the only zombie."), m_ClientID);
 
 	char aBuf[64];
 	if(DoChatMsg)
@@ -585,7 +583,7 @@ void CPlayer::SetZomb(int From)
 	m_pCharacter->SetZomb();
 	GameServer()->m_pController->OnPlayerInfoChange(GameServer()->m_apPlayers[m_ClientID]);
 	GameServer()->m_pController->CheckZomb();
-	GameServer()->SendChatTarget(m_ClientID, "You are now a zombie! Eat some brains.");
+	GameServer()->SendChatTarget(m_ClientID, _("You are now a zombie! Eat some brains."));
 }
 
 void CPlayer::ResetZomb()
@@ -596,4 +594,14 @@ void CPlayer::ResetZomb()
 	m_Team = TEAM_BLUE;
 	m_KillingSpree = m_JumpsShop = m_RangeShop = 0;
 	GameServer()->m_pController->OnPlayerInfoChange(GameServer()->m_apPlayers[m_ClientID]);
+}
+
+const char* CPlayer::GetLanguage()
+{
+	return m_aLanguage;
+}
+
+void CPlayer::SetLanguage(const char* pLanguage)
+{
+	str_copy(m_aLanguage, pLanguage, sizeof(m_aLanguage));
 }

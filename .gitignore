@@ -1,5 +1,5 @@
 # xPanic-specific files
-/DDNet-Server
+/xPanic-Server*
 /accounts/
 /autoexec_server.cfg
 /autoexec_server.log
@@ -10,6 +10,7 @@
 
 # Python
 __pycache__/
+/datasrc/*.pyc
 
 # Prerequisites
 *.d

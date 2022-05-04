@@ -142,6 +142,7 @@ public:
 
 		void Reset();
 
+		char m_aLanguage[16];
 		// DDRace
 
 		NETADDR m_Addr;
@@ -289,6 +290,11 @@ public:
 	void RestrictRconOutput(int ClientID) { m_RconRestrict = ClientID; }
 
 	virtual int* GetIdMap(int ClientID);
+
+// Localization
+public:
+	virtual const char* GetClientLanguage(int ClientID);
+	virtual void SetClientLanguage(int ClientID, const char* pLanguage);
 };
 
 #endif

@@ -18,7 +18,117 @@
 #include "gamemodes/DDRace.h"
 #include "entities/turret.h"
 #include <string.h>
- 
+
+#include <teeothers/components/localization.h>
+
+void CQueryRegister::OnData()
+{
+	if(Next())
+	{
+		m_pGameServer->SendChatTarget(m_ClientID, _("Account already exists."));
+	}
+	else
+	{
+		if(m_pDatabase->Register(Username, Password, Language, m_ClientID))
+		{
+			char aBuf[256];
+			m_pGameServer->SendChatTarget(m_ClientID, _("~~~~~~~~ ! Registered ! ~~~~~~~~"));
+			m_pGameServer->SendChatTarget(m_ClientID, _("Username: {str:Username}"), "Username", Username);
+			m_pGameServer->SendChatTarget(m_ClientID, _("Password: {str:Password}"), "Password", Password);
+			m_pGameServer->SendChatTarget(m_ClientID, _("Now use the /login {str:u} {str:p}"), "u", Username, "p", Password);
+			m_pGameServer->SendChatTarget(m_ClientID, _("~~~~~~~~ ! Registered ! ~~~~~~~~"));
+			m_pGameServer->Login(Username, Password, m_ClientID);
+		}
+	}
+}
+
+void CQueryLogin::OnData()
+{
+	if(Next())
+	{
+//		if(m_pDatabase->Login(Username, Password, m_ClientID))
+//		{
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_UserID = GetInt(GetID("ID"));
+			str_format(m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Username, sizeof(m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Username), GetText(GetID("Username")));
+			str_format(m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Password, sizeof(m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Password), GetText(GetID("Password")));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Exp = GetInt(GetID("Exp"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Level = GetInt(GetID("Level"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Money = GetInt(GetID("Money"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Dmg = GetInt(GetID("Dmg"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Health = GetInt(GetID("Health"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Ammoregen = GetInt(GetID("Ammoregen"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Handle = GetInt(GetID("Handle"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Ammo = GetInt(GetID("Ammo"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_PlayerState = GetInt(GetID("PlayerState"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_TurretMoney = GetInt(GetID("TurretMoney"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_TurretLevel = GetInt(GetID("TurretLevel"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_TurretExp = GetInt(GetID("TurretExp"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_TurretDmg = GetInt(GetID("TurretDmg"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_TurretSpeed = GetInt(GetID("TurretSpeed"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_TurretAmmo = GetInt(GetID("TurretAmmo"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_TurretShotgun = GetInt(GetID("TurretShotgun"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_TurretRange = GetInt(GetID("TurretRange"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Freeze = GetInt(GetID("Freeze"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Winner = GetInt(GetID("Winner"));
+			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Luser = GetInt(GetID("Luser"));
+			m_pGameServer->Server()->SetClientLanguage(m_ClientID, GetText(GetID("Language")));
+
+			for(int j = 0; j < MAX_CLIENTS; j++)
+			{
+				if((j != m_ClientID) && m_pGameServer->m_apPlayers[m_ClientID] && m_pGameServer->m_apPlayers[j] && m_pGameServer->m_apPlayers[j]->m_AccData.m_UserID == m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_UserID)
+				{
+					dbg_msg("account", "Account login failed ('%s' - already in use (local))", Username);
+					m_pGameServer->SendChatTarget(m_ClientID, "Account already in use");
+					return;
+				}
+			}
+
+			if (m_pGameServer->m_apPlayers[m_ClientID]->GetTeam() == TEAM_SPECTATORS)
+			{	
+				if (m_pGameServer->m_pController->ZombStarted() && m_pGameServer->m_pController->m_Warmup)
+					m_pGameServer->m_apPlayers[m_ClientID]->SetTeam(TEAM_RED);
+				else
+					m_pGameServer->m_apPlayers[m_ClientID]->SetTeam(TEAM_BLUE);
+			}
+			m_pGameServer->SendChatTarget(m_ClientID, _("Successfully logged in! Have fun while playing!"));
+//		}
+	}
+	else
+	{
+		m_pGameServer->SendChatTarget(m_ClientID, _("This account does not exist. Use /help"));
+	}
+}
+
+void CQueryApply::OnData()
+{
+	if(Next())
+	{
+		dbg_msg("s","%d", m_Level);
+		
+		m_pDatabase->Apply(Username, Password, Language, m_ClientID, 
+		m_Exp, 
+		m_Level, 
+		m_Money, 
+		m_Dmg,
+		m_Health, 
+		m_Ammoregen, 
+		m_Handle, 
+		m_Ammo, 
+		m_PlayerState, 
+		m_TurretMoney, 
+		m_TurretLevel, 
+		m_TurretExp, 
+		m_TurretDmg, 
+		m_TurretSpeed, 
+		m_TurretAmmo, 
+		m_TurretShotgun, 
+		m_TurretRange, 
+		m_Freeze, 
+		m_Winner, 
+		m_Luser);
+	}
+}
+
 enum
 {
 	RESET,
@@ -47,6 +157,8 @@ void CGameContext::Construct(int Resetting)
 	}
 	m_ChatResponseTargetID = -1;
 	m_aDeleteTempfile[0] = 0;
+
+	m_pDatabase = new CSql();
 }
 
 CGameContext::CGameContext(int Resetting){
@@ -230,16 +342,37 @@ void CGameContext::CallVote(int ClientID, const char *aDesc, const char *aCmd, c
 	pPlayer->m_LastVoteCall = Now;
 }
 
-void CGameContext::SendChatTarget(int To, const char *pText)
+void CGameContext::SendChatTarget(int To, const char *pText, ...)
 {
+	int Start = (To < 0 ? 0 : To);
+	int End = (To < 0 ? MAX_CLIENTS : To+1);
+	
+
 	CNetMsg_Sv_Chat Msg;
 	Msg.m_Team = 0;
 	Msg.m_ClientID = -1;
-	Msg.m_pMessage = pText;
-	if(g_Config.m_SvDemoChat)
-		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, To);
-	else
-		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL|MSGFLAG_NORECORD, To);
+	
+	dynamic_string Buffer;
+
+	va_list VarArgs;
+	va_start(VarArgs, pText);
+
+	for(int i = Start; i < End; i++)
+	{
+		if(m_apPlayers[i])
+		{
+			Buffer.clear();
+			Server()->Localization()->Format_VL(Buffer, m_apPlayers[i]->GetLanguage(), pText, VarArgs);
+			
+			Msg.m_pMessage = Buffer.buffer();
+		
+			if(g_Config.m_SvDemoChat)
+				Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, i);
+			else
+				Server()->SendPackMsg(&Msg, MSGFLAG_VITAL|MSGFLAG_NORECORD, i);
+		}
+	}
+	va_end(VarArgs);
 }
 
 void CGameContext::SendChatTeam(int Team, const char *pText)
@@ -335,11 +468,29 @@ void CGameContext::SendWeaponPickup(int ClientID, int Weapon)
 }
 
 
-void CGameContext::SendBroadcast(const char *pText, int ClientID)
+void CGameContext::SendBroadcast(const char *pText, int To, ...)
 {
-	CNetMsg_Sv_Broadcast Msg;
-	Msg.m_pMessage = pText;
-	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, ClientID);
+	int Start = (To < 0 ? 0 : To);
+	int End = (To < 0 ? MAX_CLIENTS : To+1);
+	
+	dynamic_string Buffer;
+	
+	va_list VarArgs;
+	va_start(VarArgs, pText);
+	
+	for(int i = Start; i < End; i++)
+	{
+		if(m_apPlayers[i])
+		{
+			Buffer.clear();
+			Server()->Localization()->Format_VL(Buffer, m_apPlayers[i]->GetLanguage(), pText, VarArgs);
+			CNetMsg_Sv_Broadcast Msg;
+			Msg.m_pMessage = Buffer.buffer();
+			Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, To);
+		}
+	}
+	
+	va_end(VarArgs);
 }
 
 void CGameContext::StartVote(const char *pDesc, const char *pCommand, const char *pReason)
@@ -733,9 +884,9 @@ void CGameContext::OnClientEnter(int ClientID)
 		SendVoteSet(ClientID);
 
 	char Name[96];
-	SendChatTarget(ClientID, "Use /register <username> <password> to create an account");
-	SendChatTarget(ClientID, "Use /login <username> <password> to rejoin");
-	SendChatTarget(ClientID, "Use /cmdlist' for a list of commands");
+	SendChatTarget(ClientID, _("Use /register <username> <password> to create an account"));
+	SendChatTarget(ClientID, _("Use /login <username> <password> to rejoin"));
+	SendChatTarget(ClientID, _("Use /cmdlist' for a list of commands"));
 
 	m_pController->CheckZomb();
 	m_apPlayers[ClientID]->m_Authed = ((CServer*)Server())->m_aClients[ClientID].m_Authed;
@@ -762,11 +913,17 @@ void CGameContext::OnClientConnected(int ClientID)
 void CGameContext::OnClientDrop(int ClientID, const char *pReason)
 {		
 	AbortVoteKickOnDisconnect(ClientID);
+	if(m_apPlayers[ClientID]->m_AccData.m_UserID)
+	{
+		if(m_apPlayers[ClientID]->m_pAccount->Apply())
+		{
+		}
+	}
+
 	m_apPlayers[ClientID]->OnDisconnect(pReason);
-	
 	delete m_apPlayers[ClientID];
 	m_apPlayers[ClientID] = 0;
-	
+
 	if(!m_pController->NumZombs() && m_pController->ZombStarted() && !m_pController->m_Warmup)
 		m_pController->RandomZomb(-2);
 	
@@ -782,15 +939,13 @@ void CGameContext::OnClientDrop(int ClientID, const char *pReason)
 
 void CGameContext::SendPM(int ClientID, int FromID, char *string)
 {
-	if(!m_apPlayers[FromID]) return SendChatTarget(ClientID, "No player with such id");
-	if(ClientID == FromID) return SendChatTarget(FromID, "Attempt to send a personal message to yourself -_-");
+	if(!m_apPlayers[FromID]) return SendChatTarget(ClientID, _("No player with such id"));
+	if(ClientID == FromID) return SendChatTarget(FromID, _("Attempt to send a personal message to yourself -_-"));
 	if(Server()->ClientIngame(ClientID) && Server()->ClientIngame(FromID))
 	{
 		char aBuf[128];
-		str_format(aBuf, sizeof(aBuf), "pm from '%s': %s", Server()->ClientName(ClientID), string);
-		SendChatTarget(FromID, aBuf);
-		str_format(aBuf, sizeof(aBuf), "pm to '%s': %s", Server()->ClientName(FromID), string);
-		SendChatTarget(ClientID, aBuf);	
+		SendChatTarget(FromID, _("pm from '{str:Name}': {str:text}"), "Name", Server()->ClientName(ClientID), "text", string);
+		SendChatTarget(FromID, _("pm to '{str:Name}': {str:text}"), "Name", Server()->ClientName(FromID), "text", string);
 	}	
 }
 
@@ -862,13 +1017,13 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			//if(pPlayer->GetTeam() == TEAM_SPECTATORS)
 			if(g_Config.m_SvSpectatorVotes == 0 && pPlayer->GetTeam() == TEAM_SPECTATORS)
 			{
-				SendChatTarget(ClientID, "Spectators aren't allowed to start a vote.");
+				SendChatTarget(ClientID, _("Spectators aren't allowed to start a vote."));
 				return;
 			}
 
 			if(m_VoteCloseTime)
 			{
-				SendChatTarget(ClientID, "Wait for current vote to end before calling a new one.");
+				SendChatTarget(ClientID, _("Wait for current vote to end before calling a new one."));
 				return;
 			}
 
@@ -876,8 +1031,8 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			if(pPlayer->m_LastVoteCall && Timeleft > 0)
 			{
 				char aChatmsg[512] = {0};
-				str_format(aChatmsg, sizeof(aChatmsg), "You must wait %d seconds before making another vote", (Timeleft/Server()->TickSpeed())+1);
-				SendChatTarget(ClientID, aChatmsg);
+				int sec = (Timeleft/Server()->TickSpeed())+1;
+				SendChatTarget(ClientID, _("You must wait {int:sec} seconds before making another vote"), "sec", &sec);
 				return;
 			}
 
@@ -896,7 +1051,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 					{
 						if(!Console()->LineIsValid(pOption->m_aCommand))
 						{
-							SendChatTarget(ClientID, "Invalid option");
+							SendChatTarget(ClientID, _("Invalid option"));
 							return;
 						}
 						if(!m_apPlayers[ClientID]->m_Authed && (strncmp(pOption->m_aCommand, "sv_map ", 7) == 0 || strncmp(pOption->m_aCommand, "change_map ", 11) == 0 || strncmp(pOption->m_aCommand, "random_map", 10) == 0 || strncmp(pOption->m_aCommand, "random_unfinished_map", 21) == 0) && time_get() < m_LastMapVote + (time_freq() * g_Config.m_SvVoteMapTimeDelay))
@@ -966,7 +1121,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				//else if(!g_Config.m_SvVoteKick)
 				else if(!g_Config.m_SvVoteKick && !pPlayer->m_Authed) // allow admins to call kick votes even if they are forbidden
 				{
-					SendChatTarget(ClientID, "Server does not allow voting to kick players");
+					SendChatTarget(ClientID, _("Server does not allow voting to kick players"));
 					m_apPlayers[ClientID]->m_Last_KickVote = time_get();
 					return;
 				}
@@ -990,12 +1145,12 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 				if(KickID < 0 || KickID >= MAX_CLIENTS || !m_apPlayers[KickID])
 				{
-					SendChatTarget(ClientID, "Invalid client id to kick");
+					SendChatTarget(ClientID, _("Invalid client id to kick"));
 					return;
 				}
 				if(KickID == ClientID)
 				{
-					SendChatTarget(ClientID, "You can't kick yourself");
+					SendChatTarget(ClientID, _("You can't kick yourself"));
 					return;
 				}
 				if (!Server()->ReverseTranslate(KickID, ClientID))
@@ -1005,7 +1160,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				//if(Server()->IsAuthed(KickID))
 				if(m_apPlayers[KickID]->m_Authed > 0 && m_apPlayers[KickID]->m_Authed >= pPlayer->m_Authed)
 				{
-					SendChatTarget(ClientID, "You can't kick moderators");
+					SendChatTarget(ClientID, _("You can't kick moderators"));
 					m_apPlayers[ClientID]->m_Last_KickVote = time_get();
 					char aBufKick[96];
 					str_format(aBufKick, sizeof(aBufKick), "'%s' called for vote to kick you", Server()->ClientName(ClientID));
@@ -1016,7 +1171,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				// Don't allow kicking if a player has no character
 				if(!GetPlayerChar(ClientID) || !GetPlayerChar(KickID) || GetDDRaceTeam(ClientID) != GetDDRaceTeam(KickID))
 				{
-					SendChatTarget(ClientID, "You can kick only your team member");
+					SendChatTarget(ClientID, _("You can kick only your team member"));
 					m_apPlayers[ClientID]->m_Last_KickVote = time_get();
 					return;
 				}
@@ -1039,7 +1194,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			{
 				if(!g_Config.m_SvVoteSpectate)
 				{
-					SendChatTarget(ClientID, "Server does not allow voting to move players to spectators");
+					SendChatTarget(ClientID, _("Server does not allow voting to move players to spectators"));
 					return;
 				}
 
@@ -1047,12 +1202,12 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 				if(SpectateID < 0 || SpectateID >= MAX_CLIENTS || !m_apPlayers[SpectateID] || m_apPlayers[SpectateID]->GetTeam() == TEAM_SPECTATORS)
 				{
-					SendChatTarget(ClientID, "Invalid client id to move");
+					SendChatTarget(ClientID, _("Invalid client id to move"));
 					return;
 				}
 				if(SpectateID == ClientID)
 				{
-					SendChatTarget(ClientID, "You can't move yourself");
+					SendChatTarget(ClientID, _("You can't move yourself"));
 					return;
 				}
 				if (!Server()->ReverseTranslate(SpectateID, ClientID))
@@ -1062,7 +1217,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 				if(!GetPlayerChar(ClientID) || !GetPlayerChar(SpectateID) || GetDDRaceTeam(ClientID) != GetDDRaceTeam(SpectateID))
 				{
-					SendChatTarget(ClientID, "You can only move your team member to specators");
+					SendChatTarget(ClientID, _("You can only move your team member to specators"));
 					return;
 				}
 
@@ -1112,9 +1267,8 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			}
 			else
 			{
-				char aBuf[32];
-				str_format(aBuf, sizeof(aBuf), "Only %d active players are allowed", Server()->MaxClients()-g_Config.m_SvSpectatorSlots);
-				SendBroadcast(aBuf, ClientID);
+				int Num = Server()->MaxClients()-g_Config.m_SvSpectatorSlots;
+				SendBroadcast(_("Only {int:Num} active players are allowed"), ClientID, "Num", &Num);
 			}
 		}
 		else if (MsgID == NETMSGTYPE_CL_ISDDNET)
@@ -1154,7 +1308,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 			pPlayer->m_LastSetSpectatorMode = Server()->Tick();
 			if(pMsg->m_SpectatorID != SPEC_FREEVIEW && (!m_apPlayers[pMsg->m_SpectatorID] || m_apPlayers[pMsg->m_SpectatorID]->GetTeam() == TEAM_SPECTATORS))
-				SendChatTarget(ClientID, "Invalid spectator id used");
+				SendChatTarget(ClientID, _("Invalid spectator id used"));
 			else
 				pPlayer->m_SpectatorID = pMsg->m_SpectatorID;
 		}
@@ -1242,13 +1396,13 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 							{
 								if (Collision()->IntersectLine(pChr->m_TurRifle, pChr->m_Pos, &pChr->m_Pos, 0,false))
 								{
-									SendChatTarget(ClientID, "With not the wall!");
+									SendChatTarget(ClientID, _("With not the wall!"));
 									pChr->m_TurRifle = vec2(0, 0);
 									return;
 								}
 								if (distance(pChr->m_TurRifle, pChr->m_Pos) < 50)
 								{
-									SendChatTarget(ClientID, "This Small distance!");
+									SendChatTarget(ClientID, _("This Small distance!"));
 									pChr->m_TurRifle = vec2(0, 0);
 									return;
 								}
@@ -1276,13 +1430,13 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 							{
 								if (Collision()->IntersectLine(pChr->m_TurGrenade, pChr->m_Pos, &pChr->m_Pos, 0,false))
 								{
-									SendChatTarget(ClientID, "With not the wall!");
+									SendChatTarget(ClientID, _("With not the wall!"));
 									pChr->m_TurGrenade = vec2(0, 0);
 									return;
 								}
 								if (distance(pChr->m_TurGrenade, pChr->m_Pos) < 50)
 								{
-									SendChatTarget(ClientID, "This Small distance!");
+									SendChatTarget(ClientID, _("This Small distance!"));
 									pChr->m_TurGrenade = vec2(0, 0);
 									return;
 								}
@@ -1803,6 +1957,70 @@ void CGameContext::ConchainSpecialMotdupdate(IConsole::IResult *pResult, void *p
 	}
 }
 
+void CGameContext::SetClientLanguage(int ClientID, const char *pLanguage)
+{
+	Server()->SetClientLanguage(ClientID, pLanguage);
+	if(m_apPlayers[ClientID])
+	{
+		m_apPlayers[ClientID]->SetLanguage(pLanguage);
+	}
+}
+
+void CGameContext::ConLanguage(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+
+	int ClientID = pResult->m_ClientID;
+
+	const char *pLanguageCode = (pResult->NumArguments()>0) ? pResult->GetString(0) : 0x0;
+	char aFinalLanguageCode[8];
+	aFinalLanguageCode[0] = 0;
+
+	if(pLanguageCode)
+	{
+		if(str_comp_nocase(pLanguageCode, "ua") == 0)
+			str_copy(aFinalLanguageCode, "uk", sizeof(aFinalLanguageCode));
+		else
+		{
+			for(int i=0; i<pSelf->Server()->Localization()->m_pLanguages.size(); i++)
+			{
+				if(str_comp_nocase(pLanguageCode, pSelf->Server()->Localization()->m_pLanguages[i]->GetFilename()) == 0)
+					str_copy(aFinalLanguageCode, pLanguageCode, sizeof(aFinalLanguageCode));
+			}
+		}
+	}
+	
+	if(aFinalLanguageCode[0])
+	{
+		pSelf->SetClientLanguage(ClientID, aFinalLanguageCode);
+		pSelf->SendChatTarget(ClientID, _("Language successfully switched to English"));
+	}
+	else
+	{
+		const char* pLanguage = pSelf->m_apPlayers[ClientID]->GetLanguage();
+		const char* pTxtUnknownLanguage = pSelf->Server()->Localization()->Localize(pLanguage, _("Unknown language"));
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "language", pTxtUnknownLanguage);	
+		
+		dynamic_string BufferList;
+		int BufferIter = 0;
+		for(int i=0; i<pSelf->Server()->Localization()->m_pLanguages.size(); i++)
+		{
+			if(i>0)
+				BufferIter = BufferList.append_at(BufferIter, ", ");
+			BufferIter = BufferList.append_at(BufferIter, pSelf->Server()->Localization()->m_pLanguages[i]->GetFilename());
+		}
+		
+		dynamic_string Buffer;
+		pSelf->Server()->Localization()->Format_L(Buffer, pLanguage, _("Available languages: {str:ListOfLanguage}"), "ListOfLanguage", BufferList.buffer(), NULL);
+		
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "language", Buffer.buffer());
+
+        pSelf->SendChatTarget(ClientID, Buffer.buffer());
+    }
+	
+	return;
+}
+
 void CGameContext::OnConsoleInit()
 {
 	m_pServer = Kernel()->RequestInterface<IServer>();
@@ -1831,6 +2049,8 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("clear_votes", "", CFGFLAG_SERVER, ConClearVotes, this, "Clears the voting options");
 	Console()->Register("vote", "r['yes'|'no']", CFGFLAG_SERVER, ConVote, this, "Force a vote to yes/no");
 
+	Console()->Register("language", "s", CFGFLAG_CHAT, ConLanguage, this, "");
+	
 	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
 
 #define CONSOLE_COMMAND(name, params, flags, callback, userdata, help) m_pConsole->Register(name, params, flags, callback, userdata, help);
@@ -2332,4 +2552,64 @@ void CGameContext::ResetTuning()
 	Tuning()->Set("shotgun_speeddiff", 0);
 	Tuning()->Set("shotgun_curvature", 0);
 	SendTuningParams(-1);
+}
+
+void CGameContext::Register(const char *Username, const char *Password, int ClientID)
+{
+	char *pQueryBuf = sqlite3_mprintf("SELECT * FROM Accounts WHERE Username='%q'", Username);
+	CQueryRegister *pQuery = new CQueryRegister();
+	pQuery->Username = Username;
+	pQuery->Password = Password;
+	pQuery->m_ClientID = ClientID;
+	pQuery->m_pGameServer = this;
+	pQuery->Language = m_apPlayers[ClientID]->GetLanguage();
+	pQuery->Query(m_pDatabase, pQueryBuf);
+	sqlite3_free(pQueryBuf);
+}
+
+void CGameContext::Login(const char *Username, const char *Password, int ClientID)
+{
+	char *pQueryBuf = sqlite3_mprintf("SELECT * FROM Accounts WHERE Username='%q'", Username);
+	CQueryLogin *pQuery = new CQueryLogin();
+	pQuery->Username = Username;
+	pQuery->Password = Password;
+	pQuery->m_ClientID = ClientID;
+	pQuery->m_pGameServer = this;
+	pQuery->Query(m_pDatabase, pQueryBuf);
+	sqlite3_free(pQueryBuf);
+}
+
+bool CGameContext::Apply(const char *Username, const char *Password, const char *Language, int AccID, int m_PlayerState, int m_Level, int m_Exp, unsigned int m_Money, int m_Dmg, int m_Health, int m_Ammoregen, int m_Handle, int m_Ammo, unsigned int m_TurretMoney, int m_TurretLevel, int m_TurretExp, int m_TurretDmg, int m_TurretSpeed, int m_TurretAmmo, int m_TurretShotgun, int m_TurretRange, int m_Freeze, int m_Winner, int m_Luser)
+{
+	char *pQueryBuf = sqlite3_mprintf("SELECT * FROM Accounts WHERE Username='%q'", Username);
+	CQueryApply *pQuery = new CQueryApply();
+	pQuery->Username = Username;
+	pQuery->Password = Password;
+	pQuery->m_ClientID = AccID;
+	pQuery->m_PlayerState = m_PlayerState;
+	pQuery->m_Level = m_Level;
+	pQuery->m_Exp = m_Exp;
+	pQuery->m_Money = m_Money;
+	pQuery->m_Dmg = m_Dmg;
+	pQuery->m_Health = m_Health;
+	pQuery->m_Ammoregen = m_Ammoregen;
+	pQuery->m_Handle = m_Handle;
+	pQuery->m_Ammo = m_Ammo;
+	pQuery->m_TurretMoney = m_TurretMoney;
+	pQuery->m_TurretLevel = m_TurretLevel;
+	pQuery->m_TurretExp = m_TurretExp;
+	pQuery->m_TurretDmg = m_TurretDmg;
+	pQuery->m_TurretSpeed = m_TurretSpeed;
+	pQuery->m_TurretAmmo = m_TurretAmmo;
+	pQuery->m_TurretShotgun = m_TurretShotgun;
+	pQuery->m_TurretRange = m_TurretRange;
+	pQuery->m_Freeze = m_Freeze;
+	pQuery->m_Winner = m_Winner;
+	pQuery->m_Luser = m_Luser;
+	pQuery->Language = Language;
+	pQuery->m_pGameServer = this;
+	pQuery->Query(m_pDatabase, pQueryBuf);
+	sqlite3_free(pQueryBuf);
+
+	return true;
 }

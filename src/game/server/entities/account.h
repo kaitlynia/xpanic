@@ -11,9 +11,9 @@ class CAccount
 public:
 	CAccount(CPlayer *pPlayer, CGameContext *pGameServer);
 
-	void Login(char *Username, char *Password);
-	void Register(char *Username, char *Password);
-	void Apply();
+	void Login(char *Username, char *Password, int ClientID);
+	void Register(char *Username, char *Password, int ClientID);
+	bool Apply();
 	void Reset();
 	void NewPassword(char *NewPassword);
 	bool Exists(const char * Username);

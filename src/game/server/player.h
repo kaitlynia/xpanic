@@ -40,6 +40,10 @@ public:
 	void OnDisconnect(const char *pReason);
 	void KillCharacter(int Weapon = WEAPON_GAME);
 	CCharacter *GetCharacter();
+
+	const char* GetLanguage();
+	void SetLanguage(const char* pLanguage);
+
 	//---------------------------------------------------------
 	// this is used for snapping so we know how we can clip the view for the player
 	vec2 m_ViewPos;
@@ -152,7 +156,9 @@ private:
 	int m_ClientID;
 	int m_Team;
 
-
+	// Localization
+	char m_aLanguage[16];
+	
 	// DDRace
 
 public:

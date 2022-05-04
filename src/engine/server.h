@@ -15,6 +15,8 @@ protected:
 	int m_TickSpeed;
 
 public:
+	class CLocalization* m_pLocalization;
+	inline class CLocalization* Localization() { return m_pLocalization; }
 	/*
 		Structure: CClientInfo
 	*/
@@ -155,6 +157,9 @@ public:
 	virtual void DemoRecorder_HandleAutoStart() = 0;
 	virtual bool DemoRecorder_IsRecording() = 0;
 
+	virtual const char* GetClientLanguage(int ClientID) = 0;
+	virtual void SetClientLanguage(int ClientID, const char* pLanguage) = 0;
+	
 	// DDRace
 
 	virtual void SaveDemo(int ClientID, float Time) = 0;
