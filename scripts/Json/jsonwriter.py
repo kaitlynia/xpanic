@@ -30,6 +30,6 @@ def writejson(keyfile,valuefile):
     fo.close()
     print('check '+OutputFile)
 if __name__=='__main__':
-    writejson('labels.txt',input('translate file:'))
+    writejson(input('checker file:'),input('translate file:'))
         
         
