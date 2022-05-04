@@ -211,7 +211,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 				return GameServer()->SendChatTarget(m_pPlayer->GetCID(), _("You have not turret money counts!"));
 			
 			m_pPlayer->m_AccData.m_TurretMoney--, m_pPlayer->m_AccData.m_TurretDmg++;
-			GameServer()->SendChatTarget(m_pPlayer->GetCID(), ("Your turret's damage is upgraded, now it is: {int:TurretDmg}"), "TurretDmg", &m_pPlayer->m_AccData.m_TurretDmg);
+			GameServer()->SendChatTarget(m_pPlayer->GetCID(), _("Your turret's damage is upgraded, now it is: {int:TurretDmg}"), "TurretDmg", &m_pPlayer->m_AccData.m_TurretDmg);
 			m_pPlayer->m_pAccount->Apply();
 			return;
 		}			

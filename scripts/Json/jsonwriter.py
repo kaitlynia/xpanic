@@ -1,3 +1,5 @@
+OutputFile=(input('Output file:'))
+
 def writejsonsplited(read):
     #read=readtxt(input('choose your file'))
     for i in range(len(read)):
@@ -7,7 +9,7 @@ def writejsonsplited(read):
     fo.close()
     print('check wrote.txt')
 def writejson(keyfile,valuefile):
-    fo=open('json.txt','w',encoding='utf-8')
+    fo=open(OutputFile,'w',encoding='utf-8')
     head=['{','"translation":[\n']
     fo.writelines(head)
     fo.close()
@@ -18,7 +20,7 @@ def writejson(keyfile,valuefile):
     ru.close();en.close()
     r1=[i.strip('\n')for i in r1]
     r2=[i.strip('\n')for i in r2]
-    fo=open('json.txt','a',encoding='utf-8')
+    fo=open(OutputFile,'a',encoding='utf-8')
     for i in zip(r1,r2):        
         fo.write('\t{\n')
         fo.write('\t\t"key": "'+i[0]+'",\n')
@@ -26,8 +28,8 @@ def writejson(keyfile,valuefile):
         fo.write('\t},\n')
     fo.write(']\n}')
     fo.close()
-    print('check json.txt')
+    print('check '+OutputFile)
 if __name__=='__main__':
-    writejson('original.txt','CHN.txt')
+    writejson('labels.txt',input('translate file:'))
         
         

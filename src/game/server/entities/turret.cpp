@@ -256,7 +256,7 @@ void CTurret::ExperienceTAdd()
 
 		if(pPlayer->m_AccData.m_UserID)
 			pPlayer->m_pAccount->Apply();
-		GameServer()->SendChatTarget(m_Owner, ("Turret's Level-Up! Your turret's level now is: {int:TurretLevel}"), "TurretLevel", &pPlayer->m_AccData.m_TurretLevel);
+		GameServer()->SendChatTarget(m_Owner, _("Turret's Level-Up! Your turret's level now is: {int:TurretLevel}"), "TurretLevel", &pPlayer->m_AccData.m_TurretLevel);
 	}
 }
 

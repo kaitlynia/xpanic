@@ -878,6 +878,6 @@
 	{
 		"key": "Exp {int:Exp}/{int:Level}",
 		"value": "Your turret's damage is upgraded, now it is: {int:TurretDmg}"
-	}
+	},
 ]
 }
