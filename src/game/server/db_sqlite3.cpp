@@ -129,7 +129,7 @@ CSql::CSql()
         "Level                      INTEGER         NOT NULL        DEFAULT 1," \
         "Money                      INTEGER         NOT NULL        DEFAULT 0," \
         "Dmg                        INTEGER         NOT NULL        DEFAULT 0," \
-        "Health                     INTEGER         NOT NULL        DEFAULT 0," \
+        "Health                     INTEGER         NOT NULL        DEFAULT 10," \
         "Ammoregen                  INTEGER         NOT NULL        DEFAULT 0," \
         "Handle                     INTEGER         NOT NULL        DEFAULT 0," \
         "Ammo                       INTEGER         NOT NULL        DEFAULT 0," \

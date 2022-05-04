@@ -72,6 +72,17 @@ void CQueryLogin::OnData()
 			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Winner = GetInt(GetID("Winner"));
 			m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_Luser = GetInt(GetID("Luser"));
 			m_pGameServer->Server()->SetClientLanguage(m_ClientID, GetText(GetID("Language")));
+
+			for(int j = 0; j < MAX_CLIENTS; j++)
+			{
+				if((j != m_ClientID) && m_pGameServer->m_apPlayers[m_ClientID] && m_pGameServer->m_apPlayers[j] && m_pGameServer->m_apPlayers[j]->m_AccData.m_UserID == m_pGameServer->m_apPlayers[m_ClientID]->m_AccData.m_UserID)
+				{
+					dbg_msg("account", "Account login failed ('%s' - already in use (local))", Username);
+					m_pGameServer->SendChatTarget(m_ClientID, "Account already in use");
+					return;
+				}
+			}
+
 			if (m_pGameServer->m_apPlayers[m_ClientID]->GetTeam() == TEAM_SPECTATORS)
 			{	
 				if (m_pGameServer->m_pController->ZombStarted() && m_pGameServer->m_pController->m_Warmup)

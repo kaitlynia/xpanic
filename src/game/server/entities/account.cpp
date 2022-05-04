@@ -16,7 +16,7 @@ CAccount::CAccount(CPlayer *pPlayer, CGameContext *pGameServer)
 	m_pGameServer = pGameServer;
 }
 
-void CAccount::Login(char *Username, char *Password)
+void CAccount::Login(char *Username, char *Password, int ClientID)
 {
 	char aBuf[125];
 	if (m_pPlayer->m_AccData.m_UserID)
@@ -29,7 +29,7 @@ void CAccount::Login(char *Username, char *Password)
 	GameServer()->Login(Username, aHash, m_pPlayer->GetCID());
 }
 
-void CAccount::Register(char *Username, char *Password)
+void CAccount::Register(char *Username, char *Password, int ClientID)
 {
 	char aBuf[125];
 	if(m_pPlayer->m_AccData.m_UserID)
@@ -54,7 +54,8 @@ void CAccount::Reset()
 	str_copy(m_pPlayer->m_AccData.m_Password, "", 32);
 	
 	m_pPlayer->m_AccData.m_Exp = m_pPlayer->m_AccData.m_Level = m_pPlayer->m_AccData.m_Money = 0;
-	m_pPlayer->m_AccData.m_Dmg = m_pPlayer->m_AccData.m_Health = m_pPlayer->m_AccData.m_Ammoregen = m_pPlayer->m_AccData.m_Handle = m_pPlayer->m_AccData.m_Ammo = 0;
+	m_pPlayer->m_AccData.m_Dmg = m_pPlayer->m_AccData.m_Ammoregen = m_pPlayer->m_AccData.m_Handle = m_pPlayer->m_AccData.m_Ammo = 0;
+	m_pPlayer->m_AccData.m_Health = 10;
 	m_pPlayer->m_AccData.m_PlayerState = 0;
 	m_pPlayer->m_AccData.m_TurretMoney = m_pPlayer->m_AccData.m_TurretLevel = m_pPlayer->m_AccData.m_TurretExp = m_pPlayer->m_AccData.m_TurretDmg = m_pPlayer->m_AccData.m_TurretSpeed = 0;
 	m_pPlayer->m_AccData.m_TurretAmmo = m_pPlayer->m_AccData.m_TurretShotgun = m_pPlayer->m_AccData.m_TurretRange = m_pPlayer->m_AccData.m_Freeze = 0;

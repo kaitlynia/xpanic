@@ -29,7 +29,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		if(str_length(Username) > 15 || str_length(Username) < 4 || str_length(Password) > 15 || str_length(Password) < 4) 
 			return GameServer()->SendChatTarget(m_pPlayer->GetCID(), _("Username / Password must contain 4-15 characters"));
 		
-		m_pPlayer->m_pAccount->Login(Username, Password);
+		m_pPlayer->m_pAccount->Login(Username, Password, m_pPlayer->GetCID());
 		return;
 	}
 	
@@ -47,7 +47,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		else if (!strcmp(Username, Password))
 			return GameServer()->SendChatTarget(m_pPlayer->GetCID(), _("Username and Password must be different"));
 
-		m_pPlayer->m_pAccount->Register(Username, Password);
+		m_pPlayer->m_pAccount->Register(Username, Password, m_pPlayer->GetCID());
 		return;
 	}
 	
