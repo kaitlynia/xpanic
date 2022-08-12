@@ -77,7 +77,7 @@ void CAccount::Login(char *Username, char *Password)
 	                          &m_pPlayer->m_AccData.m_Handle,
 	                          &m_pPlayer->m_AccData.m_Ammo,
 
-	                          &m_pPlayer->m_AccData.m_PlayerState,
+	                          &(int)m_pPlayer->m_AccData.m_PlayerState,
 
 	                          &m_pPlayer->m_AccData.m_TurretMoney,
 	                          &m_pPlayer->m_AccData.m_TurretLevel,
