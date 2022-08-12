@@ -9,6 +9,15 @@
 #include "entities/cmds.h"
 #include "entities/account.h"
 
+enum class PlayerGroup : int
+{
+	NONE,
+	POLICE,
+	VIP,
+	HELPER,
+	NUM
+};
+
 // player object
 class CPlayer
 {
@@ -56,7 +65,7 @@ public:
 		int m_UserID;
 		char m_Username[32];
 		char m_Password[32];
-		int m_PlayerState;
+		PlayerGroup m_PlayerState;
 
 		int m_Level;
 		int m_Exp;

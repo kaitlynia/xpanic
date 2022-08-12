@@ -226,11 +226,11 @@ void CPlayer::Snap(int SnappingClient)
 			str_format(pSendName, sizeof(pSendName), "[O]%s", Server()->ClientName(m_ClientID));
 		else if(Server()->IsAuthed(GetCID()) && m_Prefix) 
 			str_format(pSendName, sizeof(pSendName), "[A]%s", Server()->ClientName(m_ClientID));
-		else if(m_AccData.m_PlayerState == 1) 
+		else if(m_AccData.m_PlayerState == PlayerGroup::POLICE) 
 			str_format(pSendName, sizeof(pSendName), "[P-%d]%s", m_AccData.m_Level, Server()->ClientName(m_ClientID));
-		else if(m_AccData.m_PlayerState == 2 && m_Prefix) 
+		else if(m_AccData.m_PlayerState == PlayerGroup::VIP && m_Prefix)
 			str_format(pSendName, sizeof(pSendName), "[VIP]%s", Server()->ClientName(m_ClientID));
-		else if(m_AccData.m_PlayerState == 3) 
+		else if(m_AccData.m_PlayerState == PlayerGroup::HELPER)
 			str_format(pSendName, sizeof(pSendName), "[H-%d]%s", m_AccData.m_Level, Server()->ClientName(m_ClientID));
 		else if (m_AccData.m_Freeze)
 			str_format(pSendName, sizeof(pSendName), "[F-%d]%s", m_AccData.m_Level, Server()->ClientName(m_ClientID));

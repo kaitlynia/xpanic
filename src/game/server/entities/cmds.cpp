@@ -473,7 +473,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "/stats, /upgr - upgrade system");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "/shop - shop score tees");
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "/idlist - List IDs players");	
-		if(m_pPlayer->m_AccData.m_PlayerState == 1)
+		if(m_pPlayer->m_AccData.m_PlayerState == PlayerGroup::POLICE)
 		{
 			GameServer()->SendChatTarget(m_pPlayer->GetCID(), "#This command police group");
 			GameServer()->SendChatTarget(m_pPlayer->GetCID(), "#/policehelp - help for police group");				
@@ -536,7 +536,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		return;
 	}
 	else if (!strncmp(Msg->m_pMessage, "/prefix", 7) && m_pPlayer->m_AccData.m_UserID && 
-		(GameServer()->Server()->IsAuthed(m_pPlayer->GetCID()) || m_pPlayer->m_AccData.m_PlayerState == 2 || m_pPlayer->m_AccData.m_UserID == g_Config.m_SvOwnerAccID))
+		(GameServer()->Server()->IsAuthed(m_pPlayer->GetCID()) || m_pPlayer->m_AccData.m_PlayerState == PlayerGroup::VIP || m_pPlayer->m_AccData.m_UserID == g_Config.m_SvOwnerAccID))
 	{
 		LastChat();
 		char aBuf[24];
@@ -584,7 +584,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "You had to change your level!'"), GameServer()->SendChatTarget(cid2, "Your money changed!'"), GameServer()->m_apPlayers[cid2]->m_AccData.m_Money = size, GameServer()->m_apPlayers[cid2]->m_pAccount->Apply();
 		return;
 	}
-	else if (!strncmp(Msg->m_pMessage, "/freeze", 6) && (m_pPlayer->m_AccData.m_PlayerState == 1 || GameServer()->Server()->IsAuthed(m_pPlayer->GetCID())))
+	else if (!strncmp(Msg->m_pMessage, "/freeze", 6) && (m_pPlayer->m_AccData.m_PlayerState == PlayerGroup::POLICE || GameServer()->Server()->IsAuthed(m_pPlayer->GetCID())))
 	{
 		LastChat();
 		int id;
@@ -607,7 +607,7 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 		dbg_msg("police", "Police '%s' freeze acc player '%s' login '%s'", GameServer()->Server()->ClientName(m_pPlayer->GetCID()), GameServer()->Server()->ClientName(cid2), GameServer()->m_apPlayers[cid2]->m_AccData.m_Username);			
 		return;
 	}
-	else if (!strncmp(Msg->m_pMessage, "/kick", 5) && m_pPlayer->m_AccData.m_PlayerState == 1)
+	else if (!strncmp(Msg->m_pMessage, "/kick", 5) && m_pPlayer->m_AccData.m_PlayerState == PlayerGroup::POLICE)
 	{
 		LastChat();
 		int id;
@@ -627,44 +627,40 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 	else if (!strncmp(Msg->m_pMessage, "/setgroup", 9) && GameServer()->Server()->IsAuthed(m_pPlayer->GetCID()))
 	{
 		LastChat();
-		int id, size;
-		if (sscanf(Msg->m_pMessage, "/setgroup %d %d", &id, &size) != 2)
+		int scnf_ID, scnf_Value;
+		if (sscanf(Msg->m_pMessage, "/setgroup %d %d", &scnf_ID, &scnf_Value) != 2)
 		{
 			GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Please use: /setgroup <id> <groupid>"); 
 			GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Group ID: 0 - Removed, 1 - Police, 2 - VIP, 3 - Helper"); return;
 		}
-		int cid2 = clamp(id, 0, (int)MAX_CLIENTS - 1);
-		char gname[4][12] = {"", "police", "vip", "helper"}, aBuf[64];
 
-		if (!GameServer()->m_apPlayers[cid2]) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "There is no such player!");
-		if (!GameServer()->m_apPlayers[cid2]->m_AccData.m_UserID) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "The player is not logged in account!");
-
-		switch (size)
+		scnf_ID = clamp(scnf_ID, 0, (int)MAX_CLIENTS - 1);
+		if (!GameServer()->m_apPlayers[scnf_ID])
 		{
-			case 0:
-				if (GameServer()->m_apPlayers[cid2]->m_AccData.m_PlayerState)
-				{
-					str_format(aBuf, sizeof(aBuf), "Removed group %s for player '%s'", gname[GameServer()->m_apPlayers[cid2]->m_AccData.m_PlayerState], GameServer()->Server()->ClientName(cid2));
-					GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf);
-					str_format(aBuf, sizeof(aBuf), "Your group removed %s!", gname[GameServer()->m_apPlayers[cid2]->m_AccData.m_PlayerState]);
-					GameServer()->SendChatTarget(cid2, aBuf);
-					GameServer()->m_apPlayers[cid2]->m_AccData.m_PlayerState = 0;
-				}
-				else
-				{
-					GameServer()->SendChatTarget(m_pPlayer->GetCID(), "This player already no in group!");
-				}
-			break;
-			default:
-				if(size > 3 || size < 0) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Group ID not found!");
-				GameServer()->m_apPlayers[cid2]->m_AccData.m_PlayerState = size;
-				str_format(aBuf, sizeof(aBuf), "Set group %s for player '%s'", gname[GameServer()->m_apPlayers[cid2]->m_AccData.m_PlayerState], GameServer()->Server()->ClientName(cid2));
-				GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf);
-				str_format(aBuf, sizeof(aBuf), "Your group set %s!", gname[GameServer()->m_apPlayers[cid2]->m_AccData.m_PlayerState]);
-				GameServer()->SendChatTarget(cid2, aBuf);
-			break;
+			GameServer()->SendChatTarget(m_pPlayer->GetCID(), "There is no such player!");
+			return;
 		}
-		return;
+
+		if (!GameServer()->m_apPlayers[scnf_ID]->m_AccData.m_UserID)
+		{
+			GameServer()->SendChatTarget(m_pPlayer->GetCID(), "The player is not logged in account!");
+			return;
+		}
+
+		if ((PlayerGroup)scnf_Value >= PlayerGroup::NUM || (PlayerGroup)scnf_Value < PlayerGroup::NONE)
+		{
+			GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Group ID not found!");
+			return;
+		}
+
+		char aBuf[128];
+		const char* pGroupName[4] = { "none", "police", "vip", "helper" };
+		str_format(aBuf, sizeof(aBuf), "Set group %s for player '%s'", pGroupName[scnf_Value], GameServer()->Server()->ClientName(scnf_ID));
+		GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf);
+		str_format(aBuf, sizeof(aBuf), "Your group set %s!", pGroupName[scnf_Value]);
+		GameServer()->SendChatTarget(scnf_ID, aBuf);
+
+		GameServer()->m_apPlayers[scnf_ID]->m_AccData.m_PlayerState = (PlayerGroup)scnf_Value;
 	}
 
 	if(!strncmp(Msg->m_pMessage, "/", 1))
