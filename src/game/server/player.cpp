@@ -78,7 +78,8 @@ void CPlayer::Reset()
 	m_ClientVersion = VERSION_VANILLA;
 	m_ShowOthers = g_Config.m_SvShowOthersDefault;
 	m_ShowAll = g_Config.m_SvShowAllDefault;
-	m_SpecTeam = m_NextPauseTick = 0;
+	m_SpecTeam = false;
+	m_NextPauseTick = 0;
 }
 
 void CPlayer::Tick()

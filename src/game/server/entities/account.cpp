@@ -30,7 +30,8 @@ void CAccount::Login(char *Username, char *Password)
 
 	FILE *Accfile;
 	Accfile = fopen(aBuf, "r");
-	fscanf(Accfile, "%d\n%s\n%s", &AccID, AccUsername, AccPassword);
+	int Result = fscanf(Accfile, "%d\n%s\n%s", &AccID, AccUsername, AccPassword);
+	dbg_msg("readed", "readed strings security %d", Result);
 	fclose(Accfile);
 
 	for (int j = 0; j < MAX_CLIENTS; j++)
@@ -61,35 +62,36 @@ void CAccount::Login(char *Username, char *Password)
 
 	Accfile = fopen(aBuf, "r");
 
-	fscanf(Accfile, "%d\n%s\n%s\n\n%d\n%d\n%d\n\n%d\n%d\n%d\n%d\n%d\n\n%d\n\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n\n%d\n\n%d\n%d",
-		&m_pPlayer->m_AccData.m_UserID,
-		m_pPlayer->m_AccData.m_Username,
-		m_pPlayer->m_AccData.m_Password,
+	Result = fscanf(Accfile, "%d\n%s\n%s\n\n%d\n%d\n%d\n\n%d\n%d\n%d\n%d\n%d\n\n%d\n\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n\n%d\n\n%d\n%d",
+	                          &m_pPlayer->m_AccData.m_UserID,
+	                          m_pPlayer->m_AccData.m_Username,
+	                          m_pPlayer->m_AccData.m_Password,
 
-		&m_pPlayer->m_AccData.m_Exp,
-		&m_pPlayer->m_AccData.m_Level,
-		&m_pPlayer->m_AccData.m_Money,
+	                          &m_pPlayer->m_AccData.m_Exp,
+	                          &m_pPlayer->m_AccData.m_Level,
+	                          &m_pPlayer->m_AccData.m_Money,
 
-		&m_pPlayer->m_AccData.m_Dmg,
-		&m_pPlayer->m_AccData.m_Health,
-		&m_pPlayer->m_AccData.m_Ammoregen,
-		&m_pPlayer->m_AccData.m_Handle,
-		&m_pPlayer->m_AccData.m_Ammo,
+	                          &m_pPlayer->m_AccData.m_Dmg,
+	                          &m_pPlayer->m_AccData.m_Health,
+	                          &m_pPlayer->m_AccData.m_Ammoregen,
+	                          &m_pPlayer->m_AccData.m_Handle,
+	                          &m_pPlayer->m_AccData.m_Ammo,
 
-		&m_pPlayer->m_AccData.m_PlayerState,
+	                          &m_pPlayer->m_AccData.m_PlayerState,
 
-		&m_pPlayer->m_AccData.m_TurretMoney,
-		&m_pPlayer->m_AccData.m_TurretLevel,
-		&m_pPlayer->m_AccData.m_TurretExp,
-		&m_pPlayer->m_AccData.m_TurretDmg,
-		&m_pPlayer->m_AccData.m_TurretSpeed,
-		&m_pPlayer->m_AccData.m_TurretAmmo,
-		&m_pPlayer->m_AccData.m_TurretShotgun,
-		&m_pPlayer->m_AccData.m_TurretRange,
-		&m_pPlayer->m_AccData.m_Freeze,
-		&m_pPlayer->m_AccData.m_Winner,
-		&m_pPlayer->m_AccData.m_Luser);
+	                          &m_pPlayer->m_AccData.m_TurretMoney,
+	                          &m_pPlayer->m_AccData.m_TurretLevel,
+	                          &m_pPlayer->m_AccData.m_TurretExp,
+	                          &m_pPlayer->m_AccData.m_TurretDmg,
+	                          &m_pPlayer->m_AccData.m_TurretSpeed,
+	                          &m_pPlayer->m_AccData.m_TurretAmmo,
+	                          &m_pPlayer->m_AccData.m_TurretShotgun,
+	                          &m_pPlayer->m_AccData.m_TurretRange,
+	                          &m_pPlayer->m_AccData.m_Freeze,
+	                          &m_pPlayer->m_AccData.m_Winner,
+	                          &m_pPlayer->m_AccData.m_Luser);
 
+	dbg_msg("readed", "readed string %d", Result);
 	fclose(Accfile);
 
 	if (m_pPlayer->GetTeam() == TEAM_SPECTATORS)
@@ -275,7 +277,8 @@ int CAccount::NextID()
 	if(Exists("UsersID"))
 	{
 		Accfile = fopen(AccUserID, "r");
-		fscanf(Accfile, "%d", &UserID);
+		const int Result = fscanf(Accfile, "%d", &UserID);
+		dbg_msg("readed", "readed string from account ids %d", Result);
 		fclose(Accfile);
 
 		std::remove(AccUserID);

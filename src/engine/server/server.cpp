@@ -320,32 +320,41 @@ CServer::CServer()
 	Init();
 }
 
-int CServer::TrySetClientName(int ClientID, const char *pName)
+int CServer::TrySetClientName(int ClientID, const char* pName)
 {
 	char aTrimmedName[64];
+	char aTrimmedName2[64];
 
 	// trim the name
 	str_copy(aTrimmedName, StrLtrim(pName), sizeof(aTrimmedName));
 	StrRtrim(aTrimmedName);
 
 	// check for empty names
-	if(!aTrimmedName[0])
+	if (!aTrimmedName[0])
 		return -1;
 
-	// make sure that two clients don't have the same name
-	for(int i = 0; i < MAX_CLIENTS; i++)
+	// name not allowed to start with '/'
+	if (aTrimmedName[0] == '/')
+		return -1;
+
+	pName = aTrimmedName;
+
+	// make sure that two clients doesn't have the same name
+	for (int i = 0; i < MAX_CLIENTS; i++)
 	{
-		if(i != ClientID && m_aClients[i].m_State >= CClient::STATE_READY)
+		if (i != ClientID && m_aClients[i].m_State >= CClient::STATE_READY)
 		{
-			if(str_utf8_comp_names(aTrimmedName, m_aClients[i].m_aName) == 0)
+			str_copy(aTrimmedName2, ClientName(i), sizeof(aTrimmedName2));
+			StrRtrim(aTrimmedName2);
+
+			if (str_comp(pName, aTrimmedName2) == 0)
 				return -1;
 		}
 	}
 
-	char aBuf[256];
-	str_format(aBuf, sizeof(aBuf), "'%s' -> '%s'", pName, aTrimmedName);
-	Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "server", aBuf);
-	pName = aTrimmedName;
+	// check if new and old name are the same
+	if (m_aClients[ClientID].m_aName[0] && str_comp(m_aClients[ClientID].m_aName, pName) == 0)
+		return 0;
 
 	// set the client name
 	str_copy(m_aClients[ClientID].m_aName, pName, MAX_NAME_LENGTH);
@@ -1533,8 +1542,8 @@ int CServer::LoadMap(const char *pMapName)
 		IOHANDLE File = Storage()->OpenFile(aBuf, IOFLAG_READ, IStorage::TYPE_ALL);
 		m_CurrentMapSize = (unsigned int)io_length(File);
 		if(m_pCurrentMapData)
-			mem_free(m_pCurrentMapData);
-		m_pCurrentMapData = (unsigned char *)mem_alloc(m_CurrentMapSize, 1);
+			free(m_pCurrentMapData);
+		m_pCurrentMapData = (unsigned char *)calloc(m_CurrentMapSize, 1);
 		io_read(File, m_pCurrentMapData, m_CurrentMapSize);
 		io_close(File);
 	}
@@ -1611,12 +1620,6 @@ int CServer::Run()
 
 		m_Lastheartbeat = 0;
 		m_GameStartTime = time_get();
-
-		if(g_Config.m_Debug)
-		{
-			str_format(aBuf, sizeof(aBuf), "baseline memory usage %dk", mem_stats()->allocated/1024);
-			Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "server", aBuf);
-		}
 
 		while(m_RunServer)
 		{
@@ -1754,7 +1757,7 @@ int CServer::Run()
 	m_pMap->Unload();
 
 	if(m_pCurrentMapData)
-		mem_free(m_pCurrentMapData);
+		free(m_pCurrentMapData);
 	return 0;
 }
 
@@ -2089,9 +2092,6 @@ static CServer *CreateServer() { return new CServer(); }
 
 int main(int argc, const char **argv) // ignore_convention
 {
-#if !defined(CONF_PLATFORM_MACOSX) && !defined(FUZZING)
-	dbg_enable_threaded();
-#endif
 #if defined(CONF_FAMILY_WINDOWS)
 	for(int i = 1; i < argc; i++) // ignore_convention
 	{

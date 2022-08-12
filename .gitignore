@@ -1,7 +1,6 @@
 # xPanic-specific files
 /DDNet-Server
 /accounts/
-/autoexec_server.cfg
 /autoexec_server.log
 
 # bam

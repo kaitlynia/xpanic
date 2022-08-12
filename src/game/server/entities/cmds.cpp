@@ -650,14 +650,19 @@ void CCmd::ChatCmd(CNetMsg_Cl_Say *Msg)
 					GameServer()->SendChatTarget(cid2, aBuf);
 					GameServer()->m_apPlayers[cid2]->m_AccData.m_PlayerState = 0;
 				}
-				else GameServer()->SendChatTarget(m_pPlayer->GetCID(), "This player already no in group!"); break;
+				else
+				{
+					GameServer()->SendChatTarget(m_pPlayer->GetCID(), "This player already no in group!");
+				}
+			break;
 			default:
 				if(size > 3 || size < 0) return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Group ID not found!");
 				GameServer()->m_apPlayers[cid2]->m_AccData.m_PlayerState = size;
 				str_format(aBuf, sizeof(aBuf), "Set group %s for player '%s'", gname[GameServer()->m_apPlayers[cid2]->m_AccData.m_PlayerState], GameServer()->Server()->ClientName(cid2));
 				GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf);
 				str_format(aBuf, sizeof(aBuf), "Your group set %s!", gname[GameServer()->m_apPlayers[cid2]->m_AccData.m_PlayerState]);
-				GameServer()->SendChatTarget(cid2, aBuf); break;
+				GameServer()->SendChatTarget(cid2, aBuf);
+			break;
 		}
 		return;
 	}

@@ -75,15 +75,22 @@ inline float GetAngle(vec2 Dir)
 	return a;
 }
 
-inline void StrToInts(int *pInts, int Num, const char *pStr)
+inline void StrToInts(int* pInts, int Num, const char* pStr)
 {
 	int Index = 0;
-	while(Num)
+	while (Num)
 	{
-		char aBuf[4] = {0,0,0,0};
-		for(int c = 0; c < 4 && pStr[Index]; c++, Index++)
+		char aBuf[4] = { 0,0,0,0 };
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds" // false positive
+#endif
+		for (int c = 0; c < 4 && pStr[Index]; c++, Index++)
 			aBuf[c] = pStr[Index];
-		*pInts = ((aBuf[0]+128)<<24)|((aBuf[1]+128)<<16)|((aBuf[2]+128)<<8)|(aBuf[3]+128);
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+		* pInts = ((aBuf[0] + 128) << 24) | ((aBuf[1] + 128) << 16) | ((aBuf[2] + 128) << 8) | (aBuf[3] + 128);
 		pInts++;
 		Num--;
 	}
@@ -92,14 +99,14 @@ inline void StrToInts(int *pInts, int Num, const char *pStr)
 	pInts[-1] &= 0xffffff00;
 }
 
-inline void IntsToStr(const int *pInts, int Num, char *pStr)
+inline void IntsToStr(const int* pInts, int Num, char* pStr)
 {
-	while(Num)
+	while (Num)
 	{
-		pStr[0] = (((*pInts)>>24)&0xff)-128;
-		pStr[1] = (((*pInts)>>16)&0xff)-128;
-		pStr[2] = (((*pInts)>>8)&0xff)-128;
-		pStr[3] = ((*pInts)&0xff)-128;
+		pStr[0] = (((*pInts) >> 24) & 0xff) - 128;
+		pStr[1] = (((*pInts) >> 16) & 0xff) - 128;
+		pStr[2] = (((*pInts) >> 8) & 0xff) - 128;
+		pStr[3] = ((*pInts) & 0xff) - 128;
 		pStr += 4;
 		pInts++;
 		Num--;
@@ -108,8 +115,6 @@ inline void IntsToStr(const int *pInts, int Num, char *pStr)
 	// null terminate
 	pStr[-1] = 0;
 }
-
-
 
 inline vec2 CalcPos(vec2 Pos, vec2 Velocity, float Curvature, float Speed, float Time)
 {

@@ -5,7 +5,6 @@
 #include <game/server/teams.h>
 #include <game/server/gamemodes/DDRace.h>
 #include <game/version.h>
-#include <game/generated/nethash.cpp>
 
 bool CheckClientID(int ClientID);
 
