@@ -317,7 +317,6 @@ void CServer::SetClientName(int ClientID, const char* pName)
 	char aTrimmedName[MAX_NAME_LENGTH];
 	str_copy(aTrimmedName, str_utf8_skip_whitespaces(pName), sizeof(aTrimmedName));
 	str_utf8_trim_right(aTrimmedName);
-
 	char aNameTry[MAX_NAME_LENGTH];
 	str_copy(aNameTry, aTrimmedName, sizeof(aNameTry));
 
