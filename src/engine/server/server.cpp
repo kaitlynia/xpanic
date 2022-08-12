@@ -42,44 +42,6 @@
 	#include <windows.h>
 #endif
 
-static const char *StrLtrim(const char *pStr)
-{
-	while(*pStr)
-	{
-		const char *pStrOld = pStr;
-		int Code = str_utf8_decode(&pStr);
-
-		// check if unicode is not empty
-		if(str_utf8_isspace(Code))
-		{
-			return pStrOld;
-		}
-	}
-	return pStr;
-}
-
-static void StrRtrim(char *pStr)
-{
-	const char *p = pStr;
-	const char *pEnd = 0;
-	while(*p)
-	{
-		const char *pStrOld = p;
-		int Code = str_utf8_decode(&p);
-
-		// check if unicode is not empty
-		if(str_utf8_isspace(Code))
-		{
-			pEnd = 0;
-		}
-		else if(pEnd == 0)
-			pEnd = pStrOld;
-	}
-	if(pEnd != 0)
-		*(const_cast<char *>(pEnd)) = 0;
-}
-
-
 CSnapIDPool::CSnapIDPool()
 {
 	Reset();
