@@ -30,7 +30,8 @@ void CAccount::Login(char *Username, char *Password)
 
 	FILE *Accfile;
 	Accfile = fopen(aBuf, "r");
-	fscanf(Accfile, "%d\n%s\n%s", &AccID, AccUsername, AccPassword);
+	int Result = fscanf(Accfile, "%d\n%s\n%s", &AccID, AccUsername, AccPassword);
+	dbg_msg("readed", "readed strings security %d", Result);
 	fclose(Accfile);
 
 	for (int j = 0; j < MAX_CLIENTS; j++)
@@ -61,7 +62,7 @@ void CAccount::Login(char *Username, char *Password)
 
 	Accfile = fopen(aBuf, "r");
 
-	const int Result = fscanf(Accfile, "%d\n%s\n%s\n\n%d\n%d\n%d\n\n%d\n%d\n%d\n%d\n%d\n\n%d\n\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n\n%d\n\n%d\n%d",
+	Result = fscanf(Accfile, "%d\n%s\n%s\n\n%d\n%d\n%d\n\n%d\n%d\n%d\n%d\n%d\n\n%d\n\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n\n%d\n\n%d\n%d",
 	                          &m_pPlayer->m_AccData.m_UserID,
 	                          m_pPlayer->m_AccData.m_Username,
 	                          m_pPlayer->m_AccData.m_Password,
@@ -276,7 +277,7 @@ int CAccount::NextID()
 	if(Exists("UsersID"))
 	{
 		Accfile = fopen(AccUserID, "r");
-		const int Result = fscanf(Accfile, "%d", &UserID))
+		const int Result = fscanf(Accfile, "%d", &UserID);
 		dbg_msg("readed", "readed string from account ids %d", Result);
 		fclose(Accfile);
 
