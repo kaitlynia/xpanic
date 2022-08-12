@@ -141,21 +141,6 @@ bool IGameController::OnEntity(int Index, vec2 Pos, int Layer, int Flags, int Nu
 
 	int Type = -1;
 	int SubType = 0;
-
-	int x, y;
-	x = (Pos.x - 16.0f) / 32.0f;
-	y = (Pos.y - 16.0f) / 32.0f;
-	int sides[8];
-	sides[0] = GameServer()->Collision()->Entity(x, y + 1, Layer);
-	sides[1] = GameServer()->Collision()->Entity(x + 1, y + 1, Layer);
-	sides[2] = GameServer()->Collision()->Entity(x + 1, y, Layer);
-	sides[3] = GameServer()->Collision()->Entity(x + 1, y - 1, Layer);
-	sides[4] = GameServer()->Collision()->Entity(x, y - 1, Layer);
-	sides[5] = GameServer()->Collision()->Entity(x - 1, y - 1, Layer);
-	sides[6] = GameServer()->Collision()->Entity(x - 1, y, Layer);
-	sides[7] = GameServer()->Collision()->Entity(x - 1, y + 1, Layer);
-
-
 	if (Index == ENTITY_SPAWN_RED)
 		m_aaSpawnPoints[0][m_aNumSpawnPoints[0]++] = Pos;
 	else if (Index == ENTITY_SPAWN_BLUE)

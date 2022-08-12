@@ -209,7 +209,7 @@ void CCharacter::FireWeapon()
 
 	bool FullAuto = false;
 	if(m_Core.m_ActiveWeapon == WEAPON_GRENADE || m_Core.m_ActiveWeapon == WEAPON_SHOTGUN || m_Core.m_ActiveWeapon == WEAPON_GUN ||
-		m_Core.m_ActiveWeapon == WEAPON_HAMMER && m_pPlayer->m_AccData.m_Level >= 10 || m_Core.m_ActiveWeapon == WEAPON_GUN)
+		(m_Core.m_ActiveWeapon == WEAPON_HAMMER && m_pPlayer->m_AccData.m_Level >= 10) || m_Core.m_ActiveWeapon == WEAPON_GUN)
 		FullAuto = true;
 
 	// check if we gonna fire
@@ -245,7 +245,7 @@ void CCharacter::FireWeapon()
 				if (rands == 15) 
 					new CMine(GameWorld(), m_Pos, m_pPlayer->GetCID());
 
-				if (!m_pPlayer->m_LifeActives && !m_HeartTick && (m_TypeHealthCh && g_Config.m_SvNewHearth || !g_Config.m_SvNewHearth))
+				if (!m_pPlayer->m_LifeActives && !m_HeartTick && ((m_TypeHealthCh && g_Config.m_SvNewHearth) || !g_Config.m_SvNewHearth))
 					m_pPlayer->m_LifeActives = true;
 				
 				CTurret *pClosest = (CTurret *)GameWorld()->FindFirst(CGameWorld::ENTTYPE_TURRET);
@@ -317,7 +317,7 @@ void CCharacter::FireWeapon()
 
 		case WEAPON_GUN:
 		{
-			new CProjectile(GameWorld(), WEAPON_GUN, m_pPlayer->GetCID(), ProjStartPos, Direction, (int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GunLifetime), 2+m_pPlayer->m_AccData.m_Dmg, m_pPlayer->m_KillingSpree >= g_Config.m_SvKillingSpree & g_Config.m_SvKillingSpree ? true : false, 22, -1, WEAPON_GUN);
+			new CProjectile(&GameServer()->m_World, WEAPON_GUN, m_pPlayer->GetCID(), ProjStartPos, Direction, (int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GunLifetime), 2+m_pPlayer->m_AccData.m_Dmg, (m_pPlayer->m_KillingSpree >= g_Config.m_SvKillingSpree & g_Config.m_SvKillingSpree ? true : false), 22, -1, WEAPON_GUN);
 			GameServer()->CreateSound(m_Pos, SOUND_GUN_FIRE);
 		} break;
 
@@ -436,7 +436,7 @@ void CCharacter::HandleWeapons()
 
 bool CCharacter::GiveWeapon(int Weapon, int Ammo)
 {
-	if (Weapon == WEAPON_RIFLE && !m_aWeapons[Weapon].m_Ammo || Weapon != WEAPON_RIFLE && m_aWeapons[Weapon].m_Ammo < 5 || !m_aWeapons[Weapon].m_Got)
+	if ((Weapon == WEAPON_RIFLE && !m_aWeapons[Weapon].m_Ammo) || (Weapon != WEAPON_RIFLE && m_aWeapons[Weapon].m_Ammo < 5) || !m_aWeapons[Weapon].m_Got)
 	{
 		m_aWeapons[Weapon].m_Got = true;
 		if (Weapon == WEAPON_RIFLE) m_aWeapons[Weapon].m_Ammo = min((2), Ammo);
@@ -1079,18 +1079,6 @@ void CCharacter::HandleTiles(int Index)
 	m_TileFFlagsT = GameServer()->Collision()->GetFTileFlags(MapIndexT);//
 	//dbg_msg("Tiles","%d, %d, %d, %d, %d", m_TileSIndex, m_TileSIndexL, m_TileSIndexR, m_TileSIndexB, m_TileSIndexT);
 	//Sensitivity
-	int S1 = GameServer()->Collision()->GetPureMapIndex(vec2(m_Pos.x + m_ProximityRadius / 3.f, m_Pos.y - m_ProximityRadius / 3.f));
-	int S2 = GameServer()->Collision()->GetPureMapIndex(vec2(m_Pos.x + m_ProximityRadius / 3.f, m_Pos.y + m_ProximityRadius / 3.f));
-	int S3 = GameServer()->Collision()->GetPureMapIndex(vec2(m_Pos.x - m_ProximityRadius / 3.f, m_Pos.y - m_ProximityRadius / 3.f));
-	int S4 = GameServer()->Collision()->GetPureMapIndex(vec2(m_Pos.x - m_ProximityRadius / 3.f, m_Pos.y + m_ProximityRadius / 3.f));
-	int Tile1 = GameServer()->Collision()->GetTileIndex(S1);
-	int Tile2 = GameServer()->Collision()->GetTileIndex(S2);
-	int Tile3 = GameServer()->Collision()->GetTileIndex(S3);
-	int Tile4 = GameServer()->Collision()->GetTileIndex(S4);
-	int FTile1 = GameServer()->Collision()->GetFTileIndex(S1);
-	int FTile2 = GameServer()->Collision()->GetFTileIndex(S2);
-	int FTile3 = GameServer()->Collision()->GetFTileIndex(S3);
-	int FTile4 = GameServer()->Collision()->GetFTileIndex(S4);
 	if(Index < 0)
 	{
 		m_iVisible = false;

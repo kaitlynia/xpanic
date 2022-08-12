@@ -61,7 +61,7 @@ void CAccount::Login(char *Username, char *Password)
 
 	Accfile = fopen(aBuf, "r");
 
-	fscanf(Accfile, "%d\n%s\n%s\n\n%d\n%d\n%d\n\n%d\n%d\n%d\n%d\n%d\n\n%d\n\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n\n%d\n\n%d\n%d",
+	if(fscanf(Accfile, "%d\n%s\n%s\n\n%d\n%d\n%d\n\n%d\n%d\n%d\n%d\n%d\n\n%d\n\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n\n%d\n\n%d\n%d",
 		&m_pPlayer->m_AccData.m_UserID,
 		m_pPlayer->m_AccData.m_Username,
 		m_pPlayer->m_AccData.m_Password,
@@ -88,7 +88,8 @@ void CAccount::Login(char *Username, char *Password)
 		&m_pPlayer->m_AccData.m_TurretRange,
 		&m_pPlayer->m_AccData.m_Freeze,
 		&m_pPlayer->m_AccData.m_Winner,
-		&m_pPlayer->m_AccData.m_Luser);
+		&m_pPlayer->m_AccData.m_Luser))
+		;
 
 	fclose(Accfile);
 
@@ -275,7 +276,8 @@ int CAccount::NextID()
 	if(Exists("UsersID"))
 	{
 		Accfile = fopen(AccUserID, "r");
-		fscanf(Accfile, "%d", &UserID);
+		if(fscanf(Accfile, "%d", &UserID))
+			;
 		fclose(Accfile);
 
 		std::remove(AccUserID);

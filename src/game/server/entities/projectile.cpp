@@ -73,9 +73,9 @@ void CProjectile::Tick()
 	CCharacter *TargetChr = GameServer()->m_World.IntersectCharacter(PrevPos, CurPos, 6.0f, CurPos, OwnerChar);
 
 	m_LifeSpan--;
-	if(!OwnerChar || OwnerChar->GetPlayer()->GetTeam() == TEAM_RED && m_LifeSpan >= 0 && m_Weapon == WEAPON_GRENADE || m_LifeSpan < 0 ||
+	if(!OwnerChar || (OwnerChar->GetPlayer()->GetTeam() == TEAM_RED && m_LifeSpan >= 0 && m_Weapon == WEAPON_GRENADE) || m_LifeSpan < 0 ||
 		m_Type == WEAPON_GRENADE && (GameServer()->m_pController->m_GrenadeLimit > g_Config.m_SvGrenadeLimit && m_Type == WEAPON_GRENADE && m_LifeSpan < Server()->TickSpeed()*(GameServer()->Tuning()->m_GrenadeLifetime-g_Config.m_SvGrenadeLifeRem) 
-		|| GameServer()->m_pController->m_GrenadeLimit > g_Config.m_SvGrenadeLimit+g_Config.m_SvGrenadeWarningLimit))
+		|| (GameServer()->m_pController->m_GrenadeLimit > (unsigned)(g_Config.m_SvGrenadeLimit+g_Config.m_SvGrenadeWarningLimit))))
 	{	
 		Reset();
 		return;

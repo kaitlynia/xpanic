@@ -1533,7 +1533,6 @@ void CGameContext::ConSetTeam(IConsole::IResult *pResult, void *pUserData)
 	CGameContext *pSelf = (CGameContext *)pUserData;
 	int ClientID = clamp(pResult->GetInteger(0), 0, (int)MAX_CLIENTS-1);
 	int Team = clamp(pResult->GetInteger(1), -1, 1);
-	int Delay = pResult->NumArguments()>2 ? pResult->GetInteger(2) : 0;
 	if(!pSelf->m_apPlayers[ClientID])
 		return;
 
