@@ -872,7 +872,7 @@ void CConsole::Register(const char *pName, const char *pParams,
 	bool DoAdd = false;
 	if(pCommand == 0)
 	{
-		pCommand = new(calloc(sizeof(CCommand), sizeof(void*))) CCommand;
+		pCommand = new(malloc(sizeof(CCommand))) CCommand;
 		DoAdd = true;
 	}
 	pCommand->m_pfnCallback = pfnFunc;
@@ -996,7 +996,7 @@ void CConsole::Chain(const char *pName, FChainCommandCallback pfnChainFunc, void
 		return;
 	}
 
-	CChain *pChainInfo = (CChain *)calloc(sizeof(CChain), sizeof(void*));
+	CChain* pChainInfo = (CChain*)malloc(sizeof(CChain));
 
 	// store info
 	pChainInfo->m_pfnChainCallback = pfnChainFunc;

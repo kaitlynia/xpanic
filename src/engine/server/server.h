@@ -121,6 +121,7 @@ public:
 
 		float m_Traffic;
 		int64 m_TrafficSince;
+		int m_NextMapChunk;
 
 		int m_LastAckedSnapshot;
 		int m_LastInputTick;
@@ -186,7 +187,7 @@ public:
 
 	CServer();
 
-	int TrySetClientName(int ClientID, const char *pName);
+	bool TrySetClientName(int ClientID, const char *pName);
 
 	virtual void SetClientName(int ClientID, const char *pName);
 	virtual void SetClientClan(int ClientID, char const *pClan);
@@ -228,6 +229,7 @@ public:
 	static int ClientRejoinCallback(int ClientID, void *pUser);
 
 	void SendMap(int ClientID);
+	void SendMapData(int ClientID, int Chunk);
 	void SendConnectionReady(int ClientID);
 	void SendRconLine(int ClientID, const char *pLine);
 	static void SendRconLineAuthed(const char *pLine, void *pUser, bool Highlighted = false);

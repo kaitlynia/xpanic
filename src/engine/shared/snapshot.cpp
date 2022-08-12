@@ -435,7 +435,7 @@ void CSnapshotStorage::Add(int Tick, int64 Tagtime, int DataSize, void *pData, i
 	if(CreateAlt)
 		TotalSize += DataSize;
 
-	CHolder *pHolder = (CHolder *)calloc(TotalSize, 1);
+	CHolder* pHolder = (CHolder*)malloc(TotalSize);
 
 	// set data
 	pHolder->m_Tick = Tick;

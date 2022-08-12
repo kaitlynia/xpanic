@@ -289,6 +289,7 @@ void CServer::CClient::Reset()
 	m_LastAckedSnapshot = -1;
 	m_LastInputTick = -1;
 	m_SnapRate = CClient::SNAPRATE_INIT;
+	m_NextMapChunk = 0;
 	m_Score = 0;
 }
 
@@ -320,69 +321,56 @@ CServer::CServer()
 	Init();
 }
 
-int CServer::TrySetClientName(int ClientID, const char* pName)
+
+bool CServer::TrySetClientName(int ClientID, const char* pNameRequest)
 {
-	char aTrimmedName[64];
-	char aTrimmedName2[64];
-
-	// trim the name
-	str_copy(aTrimmedName, StrLtrim(pName), sizeof(aTrimmedName));
-	StrRtrim(aTrimmedName);
-
 	// check for empty names
-	if (!aTrimmedName[0])
-		return -1;
+	if (!pNameRequest[0])
+		return false;
 
-	// name not allowed to start with '/'
-	if (aTrimmedName[0] == '/')
-		return -1;
+	// check for names starting with /, as they can be abused to make people
+	// write chat commands
+	if (pNameRequest[0] == '/')
+		return false;
 
-	pName = aTrimmedName;
-
-	// make sure that two clients doesn't have the same name
+	// make sure that two clients don't have the same name
 	for (int i = 0; i < MAX_CLIENTS; i++)
 	{
 		if (i != ClientID && m_aClients[i].m_State >= CClient::STATE_READY)
 		{
-			str_copy(aTrimmedName2, ClientName(i), sizeof(aTrimmedName2));
-			StrRtrim(aTrimmedName2);
-
-			if (str_comp(pName, aTrimmedName2) == 0)
-				return -1;
+			if (str_comp(pNameRequest, m_aClients[i].m_aName) == 0)
+				return false;
 		}
 	}
 
-	// check if new and old name are the same
-	if (m_aClients[ClientID].m_aName[0] && str_comp(m_aClients[ClientID].m_aName, pName) == 0)
-		return 0;
-
-	// set the client name
-	str_copy(m_aClients[ClientID].m_aName, pName, MAX_NAME_LENGTH);
-	return 0;
+	return true;
 }
 
-
-
-void CServer::SetClientName(int ClientID, const char *pName)
+void CServer::SetClientName(int ClientID, const char* pName)
 {
-	if(ClientID < 0 || ClientID >= MAX_CLIENTS || m_aClients[ClientID].m_State < CClient::STATE_READY)
+	if (ClientID < 0 || ClientID >= MAX_CLIENTS || !pName || m_aClients[ClientID].m_State < CClient::STATE_READY)
 		return;
 
-	if(!pName)
-		return;
+	// trim the name
+	char aTrimmedName[MAX_NAME_LENGTH];
+	str_copy(aTrimmedName, str_utf8_skip_whitespaces(pName), sizeof(aTrimmedName));
+	str_utf8_trim_right(aTrimmedName);
 
 	char aNameTry[MAX_NAME_LENGTH];
-	str_copy(aNameTry, pName, sizeof(aNameTry));
-	if(TrySetClientName(ClientID, aNameTry))
+	str_copy(aNameTry, aTrimmedName, sizeof(aNameTry));
+
+	if (!TrySetClientName(ClientID, aNameTry))
 	{
 		// auto rename
-		for(int i = 1;; i++)
+		for (int i = 1;; i++)
 		{
-			str_format(aNameTry, sizeof(aNameTry), "(%d)%s", i, pName);
-			if(TrySetClientName(ClientID, aNameTry) == 0)
+			str_format(aNameTry, sizeof(aNameTry), "(%d)%s", i, aTrimmedName);
+			if (TrySetClientName(ClientID, aNameTry))
 				break;
 		}
 	}
+	// set the client name
+	str_copy(m_aClients[ClientID].m_aName, aNameTry, MAX_NAME_LENGTH);
 }
 
 void CServer::SetClientClan(int ClientID, const char *pClan)
@@ -852,20 +840,47 @@ int CServer::DelClientCallback(int ClientID, const char *pReason, void *pUser)
 	return 0;
 }
 
-static int lastsent[MAX_CLIENTS];
-static int lastask[MAX_CLIENTS];
-static int lastasktick[MAX_CLIENTS];
-
 void CServer::SendMap(int ClientID)
 {
-	lastsent[ClientID] = 0;
-	lastask[ClientID] = 0;
-	lastasktick[ClientID] = Tick();
 	CMsgPacker Msg(NETMSG_MAP_CHANGE);
 	Msg.AddString(GetMapName(), 0);
 	Msg.AddInt(m_CurrentMapCrc);
 	Msg.AddInt(m_CurrentMapSize);
-	SendMsgEx(&Msg, MSGFLAG_VITAL|MSGFLAG_FLUSH, ClientID, true);
+	SendMsgEx(&Msg, MSGFLAG_VITAL | MSGFLAG_FLUSH, ClientID, true);
+
+	m_aClients[ClientID].m_NextMapChunk = 0;
+}
+
+void CServer::SendMapData(int ClientID, int Chunk)
+{
+	unsigned int ChunkSize = 1024 - 128;
+	unsigned int Offset = Chunk * ChunkSize;
+	int Last = 0;
+
+	// drop faulty map data requests
+	if (Chunk < 0 || Offset > m_CurrentMapSize)
+		return;
+
+	if (Offset + ChunkSize >= m_CurrentMapSize)
+	{
+		ChunkSize = m_CurrentMapSize - Offset;
+		Last = 1;
+	}
+
+	CMsgPacker Msg(NETMSG_MAP_DATA);
+	Msg.AddInt(Last);
+	Msg.AddInt(m_CurrentMapCrc);
+	Msg.AddInt(Chunk);
+	Msg.AddInt(ChunkSize);
+	Msg.AddRaw(&m_pCurrentMapData[Offset], ChunkSize);
+	SendMsgEx(&Msg, MSGFLAG_VITAL | MSGFLAG_FLUSH, ClientID, true);
+
+	if (g_Config.m_Debug)
+	{
+		char aBuf[256];
+		str_format(aBuf, sizeof(aBuf), "sending chunk %d with size %d", Chunk, ChunkSize);
+		Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "server", aBuf);
+	}
 }
 
 void CServer::SendConnectionReady(int ClientID)
@@ -1001,48 +1016,25 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 		}
 		else if(Msg == NETMSG_REQUEST_MAP_DATA)
 		{
-			if((pPacket->m_Flags&NET_CHUNKFLAG_VITAL) == 0 || m_aClients[ClientID].m_State < CClient::STATE_CONNECTING)
+			if ((pPacket->m_Flags & NET_CHUNKFLAG_VITAL) == 0 || m_aClients[ClientID].m_State < CClient::STATE_CONNECTING)
 				return;
 
 			int Chunk = Unpacker.GetInt();
-			unsigned int ChunkSize = 1024-128;
-			unsigned int Offset = Chunk * ChunkSize;
-			int Last = 0;
+			if (Chunk != m_aClients[ClientID].m_NextMapChunk || !g_Config.m_SvFastDownload)
+			{
+				SendMapData(ClientID, Chunk);
+				return;
+			}
 
-			lastask[ClientID] = Chunk;
-			lastasktick[ClientID] = Tick();
 			if (Chunk == 0)
 			{
-				lastsent[ClientID] = 0;
+				for (int i = 0; i < g_Config.m_SvMapWindow; i++)
+				{
+					SendMapData(ClientID, i);
+				}
 			}
-
-			// drop faulty map data requests
-			if(Chunk < 0 || Offset > m_CurrentMapSize)
-				return;
-
-			if(Offset+ChunkSize >= m_CurrentMapSize)
-			{
-				ChunkSize = m_CurrentMapSize-Offset;
-				Last = 1;
-			}
-
-			if (lastsent[ClientID] < Chunk+g_Config.m_SvMapWindow && g_Config.m_SvFastDownload)
-				return;
-
-			CMsgPacker Msg(NETMSG_MAP_DATA);
-			Msg.AddInt(Last);
-			Msg.AddInt(m_CurrentMapCrc);
-			Msg.AddInt(Chunk);
-			Msg.AddInt(ChunkSize);
-			Msg.AddRaw(&m_pCurrentMapData[Offset], ChunkSize);
-			SendMsgEx(&Msg, MSGFLAG_FLUSH, ClientID, true);
-
-			if(g_Config.m_Debug)
-			{
-				char aBuf[256];
-				str_format(aBuf, sizeof(aBuf), "sending chunk %d with size %d", Chunk, ChunkSize);
-				Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "server", aBuf);
-			}
+			SendMapData(ClientID, g_Config.m_SvMapWindow + m_aClients[ClientID].m_NextMapChunk);
+			m_aClients[ClientID].m_NextMapChunk++;
 		}
 		else if(Msg == NETMSG_READY)
 		{
@@ -1428,50 +1420,6 @@ void CServer::PumpNetwork()
 		}
 		else
 			ProcessClientPacket(&Packet);
-	}
-	if(g_Config.m_SvFastDownload)
-	{
-		for (int i=0;i<MAX_CLIENTS;i++)
-		{
-			if (m_aClients[i].m_State != CClient::STATE_CONNECTING)
-				continue;
-			if (lastasktick[i] < Tick()-TickSpeed())
-			{
-				lastsent[i] = lastask[i];
-				lastasktick[i] = Tick();
-			}
-			if (lastask[i]<lastsent[i]-g_Config.m_SvMapWindow)
-				continue;
-
-			int Chunk = lastsent[i]++;
-			unsigned int ChunkSize = 1024-128;
-			unsigned int Offset = Chunk * ChunkSize;
-			int Last = 0;
-
-			// drop faulty map data requests
-			if(Chunk < 0 || Offset > m_CurrentMapSize)
-				continue;
-			if(Offset+ChunkSize >= m_CurrentMapSize)
-			{
-				ChunkSize = m_CurrentMapSize-Offset;
-				Last = 1;
-			}
-
-			CMsgPacker Msg(NETMSG_MAP_DATA);
-			Msg.AddInt(Last);
-			Msg.AddInt(m_CurrentMapCrc);
-			Msg.AddInt(Chunk);
-			Msg.AddInt(ChunkSize);
-			Msg.AddRaw(&m_pCurrentMapData[Offset], ChunkSize);
-			SendMsgEx(&Msg, MSGFLAG_FLUSH, i, true);
-
-			if(g_Config.m_Debug)
-			{
-				char aBuf[256];
-				str_format(aBuf, sizeof(aBuf), "sending chunk %d with size %d", Chunk, ChunkSize);
-				Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "server", aBuf);
-			}
-		}
 	}
 
 	m_ServerBan.Update();

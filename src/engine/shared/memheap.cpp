@@ -10,7 +10,7 @@ void CHeap::NewChunk()
 	char *pMem;
 
 	// allocate memory
-	pMem = (char*)calloc (sizeof(CChunk) + CHUNK_SIZE, 1);
+	pMem = (char*)malloc(sizeof(CChunk) + CHUNK_SIZE);
 	if(!pMem)
 		return;
 

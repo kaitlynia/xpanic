@@ -1993,13 +1993,13 @@ void CGameContext::OnMapChange(char *pNewMapName, int MapNameSize)
 	while((pLine = LineReader.Get()))
 	{
 		int Length = str_length(pLine) + 1;
-		char *pCopy = (char *)calloc(Length, 1);
+		char *pCopy = (char *)malloc(Length);
 		mem_copy(pCopy, pLine, Length);
 		aLines.add(pCopy);
 		TotalLength += Length;
 	}
 
-	char *pSettings = (char *)calloc(TotalLength, 1);
+	char *pSettings = (char *)malloc(TotalLength);
 	int Offset = 0;
 	for(int i = 0; i < aLines.size(); i++)
 	{
