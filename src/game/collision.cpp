@@ -146,7 +146,7 @@ int CCollision::IntersectLine(vec2 Pos0, vec2 Pos1, vec2 *pOutCollision, vec2 *p
 	int End(Distance+1);
 	vec2 Last = Pos0;
 	int ix = 0, iy = 0; // Temporary position for checking collision
-	int dx = 0, dy = 0; // Offset for checking the "through" tile
+	//int dx = 0, dy = 0; // Offset for checking the "through" tile
 	for(int i = 0; i <= End; i++)
 	{
 		float a = i/(float)End;
