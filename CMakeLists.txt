@@ -370,6 +370,8 @@ set(DEP_MD5 $<TARGET_OBJECTS:md5>)
 ########################################################################
 # COPY DATA AND DLLS
 ########################################################################
+file(COPY maps DESTINATION .)
+file(COPY server_lang DESTINATION .)
 set(COPY_FILES
   autoexec_server.cfg
   ${ICU_COPY_FILES}
@@ -715,6 +717,8 @@ endif()
 
 if(NOT DEV)
   include(GNUInstallDirs)
+  install(DIRECTORY maps DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME} COMPONENT maps)
+  install(DIRECTORY server_lang DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME} COMPONENT server_lang)
   install(TARGETS ${TARGET_SERVER} DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT server)
 endif()
 
