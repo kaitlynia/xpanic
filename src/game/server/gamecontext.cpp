@@ -836,7 +836,6 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			if (pEnd != 0)
 				*(const_cast<char*>(pEnd)) = 0;
 
-
 			// drop empty and autocreated spam messages (more than 32 characters per second)
 			if(Length == 0 || (pMsg->m_pMessage[0]!='/' && (g_Config.m_SvSpamprotection && pPlayer->m_LastChat && pPlayer->m_LastChat+Server()->TickSpeed()*((31+Length)/32) > Server()->Tick())))
 				return;
