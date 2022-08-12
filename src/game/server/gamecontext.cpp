@@ -732,7 +732,6 @@ void CGameContext::OnClientEnter(int ClientID)
 	if(m_VoteCloseTime)
 		SendVoteSet(ClientID);
 
-	char Name[96];
 	SendChatTarget(ClientID, "Use /register <username> <password> to create an account");
 	SendChatTarget(ClientID, "Use /login <username> <password> to rejoin");
 	SendChatTarget(ClientID, "Use /cmdlist' for a list of commands");

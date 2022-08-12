@@ -317,7 +317,7 @@ void CCharacter::FireWeapon()
 
 		case WEAPON_GUN:
 		{
-			new CProjectile(&GameServer()->m_World, WEAPON_GUN, m_pPlayer->GetCID(), ProjStartPos, Direction, (int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GunLifetime), 2+m_pPlayer->m_AccData.m_Dmg, (m_pPlayer->m_KillingSpree >= g_Config.m_SvKillingSpree & g_Config.m_SvKillingSpree ? true : false), 22, -1, WEAPON_GUN);
+			new CProjectile(&GameServer()->m_World, WEAPON_GUN, m_pPlayer->GetCID(), ProjStartPos, Direction, (int)(Server()->TickSpeed()*GameServer()->Tuning()->m_GunLifetime), 2+m_pPlayer->m_AccData.m_Dmg, (m_pPlayer->m_KillingSpree >= g_Config.m_SvKillingSpree && g_Config.m_SvKillingSpree ? true : false), 22, -1, WEAPON_GUN);
 			GameServer()->CreateSound(m_Pos, SOUND_GUN_FIRE);
 		} break;
 
