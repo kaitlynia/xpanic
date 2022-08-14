@@ -36,6 +36,8 @@
 #include "register.h"
 #include "server.h"
 
+#include <teeother/components/localization.h>
+
 #if defined(CONF_FAMILY_WINDOWS)
 	#define _WIN32_WINNT 0x0501
 	#define WIN32_LEAN_AND_MEAN
@@ -253,6 +255,7 @@ void CServer::CClient::Reset()
 	m_SnapRate = CClient::SNAPRATE_INIT;
 	m_NextMapChunk = 0;
 	m_Score = 0;
+	str_copy(m_aLanguage, "ru", sizeof(m_aLanguage));
 }
 
 CServer::CServer()
@@ -482,6 +485,20 @@ int CServer::ClientCountry(int ClientID)
 bool CServer::ClientIngame(int ClientID)
 {
 	return ClientID >= 0 && ClientID < MAX_CLIENTS && m_aClients[ClientID].m_State == CServer::CClient::STATE_INGAME;
+}
+
+void CServer::SetClientLanguage(int ClientID, const char* pLanguage)
+{
+	if (ClientID < 0 || ClientID >= MAX_CLIENTS || m_aClients[ClientID].m_State < CClient::STATE_READY)
+		return;
+	str_copy(m_aClients[ClientID].m_aLanguage, pLanguage, sizeof(m_aClients[ClientID].m_aLanguage));
+}
+
+const char* CServer::GetClientLanguage(int ClientID) const
+{
+	if (ClientID < 0 || ClientID >= MAX_CLIENTS || m_aClients[ClientID].m_State < CClient::STATE_READY)
+		return "en";
+	return m_aClients[ClientID].m_aLanguage;
 }
 
 int CServer::MaxClients() const
@@ -2050,6 +2067,14 @@ int main(int argc, const char **argv) // ignore_convention
 			return -1;
 	}
 
+	pServer->m_pLocalization = new CLocalization(pStorage);
+	if (!pServer->m_pLocalization->Init())
+	{
+		dbg_msg("localization", "could not initialize localization");
+		return -1;
+	}
+
+
 	pEngine->Init();
 	pConfig->Init();
 	pEngineMasterServer->Init();
@@ -2086,6 +2111,7 @@ int main(int argc, const char **argv) // ignore_convention
 	pServer->Run();
 
 	// free
+	delete pServer->m_pLocalization;
 #if defined(CONF_FAMILY_UNIX)
 	delete fifoConsole;
 #endif

@@ -18,10 +18,10 @@ void CAccount::Login(char *Username, char *Password)
 {
 	char aBuf[125];
 	if (m_pPlayer->m_AccData.m_UserID)
-		return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Already logged in");
+		return GameServer()->Chat(m_pPlayer->GetCID(), "Already logged in");
 
 	if (!Exists(Username))
-		return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "This account does not exist. Use /help");
+		return GameServer()->Chat(m_pPlayer->GetCID(), "This account does not exist. Use /help");
 
 	str_format(aBuf, sizeof(aBuf), "accounts/%s.acc", Username);
 
@@ -39,7 +39,7 @@ void CAccount::Login(char *Username, char *Password)
 		if (GameServer()->m_apPlayers[j] && GameServer()->m_apPlayers[j]->m_AccData.m_UserID == AccID)
 		{
 			dbg_msg("account", "Account login failed ('%s' - already in use (local))", Username);
-			GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Account already in use");
+			GameServer()->Chat(m_pPlayer->GetCID(), "Account already in use");
 			return;
 		}
 
@@ -49,14 +49,14 @@ void CAccount::Login(char *Username, char *Password)
 		if (AccID == GameServer()->m_aaExtIDs[j])
 		{
 			dbg_msg("account", "Account login failed ('%s' - already in use (extern))", Username);
-			GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Account already in use");
+			GameServer()->Chat(m_pPlayer->GetCID(), "Account already in use");
 			return;
 		}
 	}
 	if (strcmp(Username, AccUsername) || strcmp(Password, AccPassword))
 	{
 		dbg_msg("account", "Account login failed ('%s' - Wrong username)", Username);
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Username / Password is wrong");
+		GameServer()->Chat(m_pPlayer->GetCID(), "Username / Password is wrong");
 		return;
 	}
 
@@ -102,24 +102,29 @@ void CAccount::Login(char *Username, char *Password)
 			m_pPlayer->SetTeam(TEAM_BLUE);
 	}
 
-	GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Successfully logged in! Have fun while playing!");
+	GameServer()->Chat(m_pPlayer->GetCID(), "Successfully logged in! Have fun while playing!");
 }
 
 void CAccount::Register(char *Username, char *Password)
 {
 	char aBuf[125];
 	if(m_pPlayer->m_AccData.m_UserID)
-		return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Already logged in");
-	
+	{
+		GameServer()->Chat(m_pPlayer->GetCID(), "Already logged in");
+		return;
+	}
 	if(Exists(Username))
-		return GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Account already exists.");
+	{
+		GameServer()->Chat(m_pPlayer->GetCID(), "Account already exists.");
+		return;
+	}
 
 	char Filter[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.-_";
 	char *p = strpbrk(Username, Filter);
 	if(!p)
 	{
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Don't use invalid chars for username!");
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "A - Z, a - z, 0 - 9, . - _");
+		GameServer()->Chat(m_pPlayer->GetCID(), "Don't use invalid chars for username!");
+		GameServer()->Chat(m_pPlayer->GetCID(), "A - Z, a - z, 0 - 9, . - _");
 		return;
 	}
 	
@@ -162,14 +167,11 @@ void CAccount::Register(char *Username, char *Password)
 
 	Login(Username, Password);
 	
-	GameServer()->SendChatTarget(m_pPlayer->GetCID(), "~~~~~~~~ ! Registered ! ~~~~~~~~");
-	str_format(aBuf, sizeof(aBuf), "Login: %s", Username);
-	GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf);
-	str_format(aBuf, sizeof(aBuf), "Password: %s", Password);
-	GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf);
-	str_format(aBuf, sizeof(aBuf), "Now use the /login %s %s", Username, Password);
-	GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf);
-	GameServer()->SendChatTarget(m_pPlayer->GetCID(), "~~~~~~~~ ! Registered ! ~~~~~~~~");
+	GameServer()->Chat(m_pPlayer->GetCID(), "~~~~~~~~ ! Registered ! ~~~~~~~~");
+	GameServer()->Chat(m_pPlayer->GetCID(), "Login: {STR}}", Username);
+	GameServer()->Chat(m_pPlayer->GetCID(), "Password: {STR}", Password);
+	GameServer()->Chat(m_pPlayer->GetCID(), "Now use the /login {STR} {STR}", Username, Password);
+	GameServer()->Chat(m_pPlayer->GetCID(), "~~~~~~~~ ! Registered ! ~~~~~~~~");
 }
 
 bool CAccount::Exists(const char *Username)
@@ -243,9 +245,7 @@ void CAccount::NewPassword(char *NewPassword)
 {
 	if(str_length(NewPassword) > 12 || str_length(NewPassword) < 4)
 	{
-		char aBuf[48];
-		str_format(aBuf, sizeof(aBuf), "Password too %s!", str_length(NewPassword)<4?"long":"short");
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf);
+		GameServer()->Chat(m_pPlayer->GetCID(), "Password too {STR}!", str_length(NewPassword) < 4 ? "long" : "short");
 		return;
     }
 	
@@ -253,8 +253,8 @@ void CAccount::NewPassword(char *NewPassword)
 	char *p = strpbrk(NewPassword, Filter);
 	if(!p)
 	{
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Don't use invalid chars for password!");
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), "A - Z, a - z, 0 - 9, . - _");
+		GameServer()->Chat(m_pPlayer->GetCID(), "Don't use invalid chars for password!");
+		GameServer()->Chat(m_pPlayer->GetCID(), "A - Z, a - z, 0 - 9, . - _");
 		return;
 	}
 	
@@ -262,7 +262,7 @@ void CAccount::NewPassword(char *NewPassword)
 	Apply();
 	
 	dbg_msg("account", "Password changed - ('%s')", m_pPlayer->m_AccData.m_Username);
-	GameServer()->SendChatTarget(m_pPlayer->GetCID(), "Password successfully changed!");
+	GameServer()->Chat(m_pPlayer->GetCID(), "Password successfully changed!");
 }
 
 

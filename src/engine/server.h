@@ -15,6 +15,9 @@ protected:
 	int m_TickSpeed;
 
 public:
+	class CLocalization* m_pLocalization;
+	CLocalization* Localization() const { return m_pLocalization; }
+
 	/*
 		Structure: CClientInfo
 	*/
@@ -136,6 +139,9 @@ public:
 	virtual void SetClientClan(int ClientID, char const *pClan) = 0;
 	virtual void SetClientCountry(int ClientID, int Country) = 0;
 	virtual void SetClientScore(int ClientID, int Score) = 0;
+
+	virtual void SetClientLanguage(int ClientID, const char* pLanguage) = 0;
+	virtual const char* GetClientLanguage(int ClientID) const = 0;
 
 	virtual int SnapNewID() = 0;
 	virtual void SnapFreeID(int ID) = 0;

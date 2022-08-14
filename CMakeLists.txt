@@ -314,7 +314,6 @@ if(NOT CMAKE_CROSSCOMPILING)
 endif()
 find_package(ZLIB)
 find_package(OpenSSL)
-find_package(ICU)
 find_package(PythonInterp 3)
 find_package(Threads)
 
@@ -338,13 +337,9 @@ endfunction()
 show_dependency_status("OpenSSL" OPENSSL)
 show_dependency_status("PythonInterp" PYTHONINTERP)
 show_dependency_status("Zlib" ZLIB)
-show_dependency_status("ICU" ICU)
 
 if(NOT(PYTHONINTERP_FOUND))
   message(SEND_ERROR "You must install Python to compile the ${PROJECT_NAME}")
-endif()
-if(NOT(ICU_FOUND))
-  message(SEND_ERROR "You must install ICU to compile Teeworlds")
 endif()
 
 if(TARGET_OS STREQUAL "windows")
@@ -360,6 +355,7 @@ endif()
 ########################################################################
 set_src(DEP_JSON_SRC GLOB src/engine/external/json-parser json.c json.h)
 add_library(json EXCLUDE_FROM_ALL OBJECT ${DEP_JSON_SRC})
+
 set_src(DEP_MD5_SRC GLOB src/engine/external/md5 md5.c md5.h)
 add_library(md5 EXCLUDE_FROM_ALL OBJECT ${DEP_MD5_SRC})
 
@@ -374,7 +370,6 @@ file(COPY maps DESTINATION .)
 file(COPY server_lang DESTINATION .)
 set(COPY_FILES
   autoexec_server.cfg
-  ${ICU_COPY_FILES}
   ${OPENSSL_COPY_FILES}
 )
 file(COPY ${COPY_FILES} DESTINATION .)
@@ -508,7 +503,7 @@ list(APPEND TARGETS_OWN engine-shared game-shared)
 # Sources
 file(GLOB_RECURSE ENGINE_SERVER "src/engine/server/*.cpp" "src/engine/server/*.h")
 file(GLOB_RECURSE GAME_SERVER "src/game/server/*.cpp" "src/game/server/*.h")
-file(GLOB_RECURSE TEEOTHER_SERVER "src/teeuniverses/*.cpp" "src/teeuniverses/*.h")
+file(GLOB_RECURSE TEEOTHER_SERVER "src/teeother/*.cpp" "src/teeother/*.h")
 set(GAME_GENERATED_SERVER "src/game/generated/server_data.cpp" "src/game/generated/server_data.h")
 set(SERVER_SRC ${ENGINE_SERVER} ${GAME_SERVER} ${TEEOTHER_SERVER} ${GAME_GENERATED_SERVER})
 
@@ -530,13 +525,7 @@ add_executable(${TARGET_SERVER}
 # Libraries
 set(LIBS_SERVER
   ${LIBS}
-  ${ICU_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}
-)
-
-# Includes
-set(INCLUDES_SERVER
-  ${ICU_INCLUDE_DIRS}
 )
 
 target_include_directories(${TARGET_SERVER} PRIVATE ${INCLUDES_SERVER})

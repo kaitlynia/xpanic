@@ -133,6 +133,8 @@ public:
 
 		char m_aName[MAX_NAME_LENGTH];
 		char m_aClan[MAX_CLAN_LENGTH];
+		char m_aLanguage[MAX_LANGUAGE_LENGTH];
+
 		int m_Country;
 		int m_Score;
 		int m_Authed;
@@ -215,6 +217,10 @@ public:
 	const char *ClientClan(int ClientID);
 	int ClientCountry(int ClientID);
 	bool ClientIngame(int ClientID);
+
+	virtual void SetClientLanguage(int ClientID, const char* pLanguage);
+	virtual const char* GetClientLanguage(int ClientID) const;
+
 	int MaxClients() const;
 
 	virtual int SendMsg(CMsgPacker *pMsg, int Flags, int ClientID);
