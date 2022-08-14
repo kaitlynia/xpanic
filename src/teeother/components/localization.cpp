@@ -4,8 +4,6 @@
 
 #include "localization.h"
 
-#include <cstdarg>
-
 CLocalization::CLanguage::CLanguage() : m_Loaded(false), m_Direction(CLocalization::DIRECTION_LTR)
 {
 	m_aName[0] = 0;

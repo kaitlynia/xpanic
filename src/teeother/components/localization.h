@@ -2,6 +2,7 @@
 #define __SHARED_LOCALIZATION__
 
 #include <teeother/tl/hashtable.h>
+#include <cstdarg>
 
 #define LPLURAL(TEXT_SINGULAR, TEXT_PLURAL) TEXT_PLURAL
 
