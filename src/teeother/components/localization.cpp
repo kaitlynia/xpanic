@@ -2,8 +2,6 @@
 
 #include <engine/storage.h>
 
-#include <stdlib.h>
-
 #include "localization.h"
 
 CLocalization::CLanguage::CLanguage() : m_Loaded(false), m_Direction(CLocalization::DIRECTION_LTR)
@@ -305,9 +303,9 @@ const char* CLocalization::Localize_P(const char* pLanguageCode, int Number, con
 
 static char* format_integer_with_commas(char commas, int n)
 {
-	char _number_array[21] = { '\0' };
-	itoa(n, _number_array, 10);
-	//_i64toa_s(n, _number_array, sizeof(_number_array), 10);
+	char _number_array[64] = { '\0' };
+	str_format(_number_array, sizeof(_number_array), "%d", n); // %ll
+
 	char* _number_pointer = _number_array;
 	int _number_of_digits = 0;
 	while (*(_number_pointer + _number_of_digits++));
@@ -397,8 +395,7 @@ void CLocalization::Format_V(dynamic_string& Buffer, const char* pLanguageCode, 
 			{
 				char aBuf[128];
 				const int pVarArgValue = va_arg(VarArgsIter, int);
-				itoa(pVarArgValue, aBuf, 10);
-				//_i64toa_s(pVarArgValue, aBuf, sizeof(aBuf), 10);
+				str_format(aBuf, sizeof(aBuf), "%d", pVarArgValue); // %ll
 				BufferIter = Buffer.append_at(BufferIter, aBuf);
 			}
 			else if(str_comp_num("VAL", pText + ParamTypeStart, 3) == 0) // value
