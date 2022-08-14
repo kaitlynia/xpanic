@@ -2,6 +2,8 @@
 
 #include <engine/storage.h>
 
+#include <cstdlib>
+
 #include "localization.h"
 
 CLocalization::CLanguage::CLanguage() : m_Loaded(false), m_Direction(CLocalization::DIRECTION_LTR)

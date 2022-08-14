@@ -204,7 +204,6 @@ void IGameController::EndRound()
 						float d = GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Luser;
 						float kofs = (k / (k + d)) * 100;
 
-						char aBuf[64];
 						GameServer()->Chat(-1, "----------------------------------");
 						GameServer()->Chat(-1, "Zombie: {STR} (WIN)", Server()->ClientName(m_LastZomb));
 						GameServer()->Chat(-1, "Win: {INT} / Lose: {INT} ({INT})", GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Winner, GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Luser, kofs);
@@ -232,7 +231,6 @@ void IGameController::EndRound()
 						float d = GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Luser;
 						float kofs = (k / (k + d)) * 100;
 
-						char aBuf[64];
 						GameServer()->Chat(-1, "----------------------------------");
 						GameServer()->Chat(-1, "Zombie: {STR} (LOSE)", Server()->ClientName(m_LastZomb));
 						GameServer()->Chat(-1, "Win: {INT} / Lose: {INT} ({INT})", GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Winner, GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Luser, kofs);
