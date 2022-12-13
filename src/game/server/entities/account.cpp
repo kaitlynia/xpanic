@@ -127,7 +127,11 @@ void CAccount::Register(char *Username, char *Password)
 		GameServer()->Chat(m_pPlayer->GetCID(), "A - Z, a - z, 0 - 9, . - _");
 		return;
 	}
-	
+
+	// checking dir
+	if(!fs_is_dir("accounts"))
+		fs_makedir("accounts");
+
 	str_format(aBuf, sizeof(aBuf), "accounts/%s.acc", Username);
 
 	FILE *Accfile;
@@ -168,7 +172,7 @@ void CAccount::Register(char *Username, char *Password)
 	Login(Username, Password);
 	
 	GameServer()->Chat(m_pPlayer->GetCID(), "~~~~~~~~ ! Registered ! ~~~~~~~~");
-	GameServer()->Chat(m_pPlayer->GetCID(), "Login: {STR}}", Username);
+	GameServer()->Chat(m_pPlayer->GetCID(), "Login: {STR}", Username);
 	GameServer()->Chat(m_pPlayer->GetCID(), "Password: {STR}", Password);
 	GameServer()->Chat(m_pPlayer->GetCID(), "Now use the /login {STR} {STR}", Username, Password);
 	GameServer()->Chat(m_pPlayer->GetCID(), "~~~~~~~~ ! Registered ! ~~~~~~~~");
@@ -292,6 +296,7 @@ int CAccount::NextID()
 	}
 	else
 	{
+		// write new acc
 		Accfile = fopen(AccUserID, "a+");
 		str_format(aBuf, sizeof(aBuf), "%d", UserID);
 		fputs(aBuf, Accfile);

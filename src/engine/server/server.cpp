@@ -255,7 +255,7 @@ void CServer::CClient::Reset()
 	m_SnapRate = CClient::SNAPRATE_INIT;
 	m_NextMapChunk = 0;
 	m_Score = 0;
-	str_copy(m_aLanguage, "ru", sizeof(m_aLanguage));
+	str_copy(m_aLanguage, "en", sizeof(m_aLanguage));
 }
 
 CServer::CServer()

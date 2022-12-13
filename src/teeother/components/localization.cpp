@@ -75,64 +75,8 @@ bool CLocalization::CLanguage::Load(CLocalization* pLocalization, IStorage* pSto
 				if(pSingular && pSingular[0])
 				{
 					Length = str_length(pSingular) + 1;
-					pEntry->m_apVersions[PLURALTYPE_NONE] = new char[Length];
-					str_copy(pEntry->m_apVersions[PLURALTYPE_NONE], pSingular, Length);
-				}
-				else
-				{
-					// zero
-					const char* pPlural = rStart[i]["zero"];
-					if(pPlural && pPlural[PLURALTYPE_ZERO])
-					{
-						Length = str_length(pPlural) + 1;
-						pEntry->m_apVersions[PLURALTYPE_ZERO] = new char[Length];
-						str_copy(pEntry->m_apVersions[PLURALTYPE_ZERO], pPlural, Length);
-					}
-
-					// one
-					pPlural = rStart[i]["one"];
-					if(pPlural && pPlural[PLURALTYPE_ONE])
-					{
-						Length = str_length(pPlural) + 1;
-						pEntry->m_apVersions[PLURALTYPE_ONE] = new char[Length];
-						str_copy(pEntry->m_apVersions[PLURALTYPE_ONE], pPlural, Length);
-					}
-
-					// two
-					pPlural = rStart[i]["two"];
-					if(pPlural && pPlural[PLURALTYPE_TWO])
-					{
-						Length = str_length(pPlural) + 1;
-						pEntry->m_apVersions[PLURALTYPE_TWO] = new char[Length];
-						str_copy(pEntry->m_apVersions[PLURALTYPE_TWO], pPlural, Length);
-					}
-
-					// few
-					pPlural = rStart[i]["few"];
-					if(pPlural && pPlural[PLURALTYPE_FEW])
-					{
-						Length = str_length(pPlural) + 1;
-						pEntry->m_apVersions[PLURALTYPE_FEW] = new char[Length];
-						str_copy(pEntry->m_apVersions[PLURALTYPE_FEW], pPlural, Length);
-					}
-
-					// many
-					pPlural = rStart[i]["many"];
-					if(pPlural && pPlural[PLURALTYPE_MANY])
-					{
-						Length = str_length(pPlural) + 1;
-						pEntry->m_apVersions[PLURALTYPE_MANY] = new char[Length];
-						str_copy(pEntry->m_apVersions[PLURALTYPE_MANY], pPlural, Length);
-					}
-
-					// other
-					pPlural = rStart[i]["other"];
-					if(pPlural && pPlural[PLURALTYPE_OTHER])
-					{
-						Length = str_length(pPlural) + 1;
-						pEntry->m_apVersions[PLURALTYPE_OTHER] = new char[Length];
-						str_copy(pEntry->m_apVersions[PLURALTYPE_OTHER], pPlural, Length);
-					}
+					pEntry->m_apVersions = new char[Length];
+					str_copy(pEntry->m_apVersions, pSingular, Length);
 				}
 			}
 		}
@@ -151,20 +95,10 @@ const char* CLocalization::CLanguage::Localize(const char* pText) const
 	if(!pEntry)
 		return nullptr;
 
-	return pEntry->m_apVersions[PLURALTYPE_NONE];
+	return pEntry->m_apVersions;
 }
 
-const char* CLocalization::CLanguage::Localize_P(int Number, const char* pText) const
-{
-	const CEntry* pEntry = m_Translations.get(pText);
-	if(!pEntry)
-		return nullptr;
-	
-	int PluralCode = PLURALTYPE_NONE;
-	return pEntry->m_apVersions[PluralCode];
-}
-
-CLocalization::CLocalization(class IStorage* pStorage) : m_pStorage(pStorage), m_pMainLanguage(nullptr)
+CLocalization::CLocalization(IStorage* pStorage) : m_pStorage(pStorage), m_pMainLanguage(nullptr)
 { }
 
 CLocalization::~CLocalization()
@@ -183,7 +117,7 @@ bool CLocalization::Init()
 {
 	// read file data into buffer
 	const char* pFilename = "./server_lang/index.json";
-	const IOHANDLE File = Storage()->OpenFile(pFilename, IOFLAG_READ, IStorage::TYPE_ALL);
+	IOHANDLE File = Storage()->OpenFile(pFilename, IOFLAG_READ, IStorage::TYPE_ALL);
 	if(!File)
 	{
 		dbg_msg("Localization", "can't open ./server_lang/index.json");
@@ -202,10 +136,7 @@ bool CLocalization::Init()
 	json_value* pJsonData = json_parse_ex(&JsonSettings, pFileData, FileSize, aError);
 	free(pFileData);
 	if(pJsonData == nullptr)
-	{
-		delete[] pFileData;
 		return true; // return true because it's not a critical error
-	}
 
 	// extract data
 	m_pMainLanguage = nullptr;
@@ -216,9 +147,6 @@ bool CLocalization::Init()
 		{
 			CLanguage*& pLanguage = m_pLanguages.increment();
 			pLanguage = new CLanguage((const char*)rStart[i]["name"], (const char*)rStart[i]["file"], (const char*)rStart[i]["parent"]);
-
-			if((const char*)rStart[i]["direction"] && str_comp(rStart[i]["direction"], "rtl") == 0)
-				pLanguage->SetWritingDirection(DIRECTION_RTL);
 
 			if(m_Cfg_MainLanguage == pLanguage->GetFilename())
 			{
@@ -265,78 +193,6 @@ const char* CLocalization::LocalizeWithDepth(const char* pLanguageCode, const ch
 const char* CLocalization::Localize(const char* pLanguageCode, const char* pText)
 {
 	return LocalizeWithDepth(pLanguageCode, pText, 0);
-}
-
-const char* CLocalization::LocalizeWithDepth_P(const char* pLanguageCode, int Number, const char* pText, int Depth)
-{
-	CLanguage* pLanguage = m_pMainLanguage;
-	if(pLanguageCode)
-	{
-		for(int i = 0; i < m_pLanguages.size(); i++)
-		{
-			if(str_comp(m_pLanguages[i]->GetFilename(), pLanguageCode) == 0)
-			{
-				pLanguage = m_pLanguages[i];
-				break;
-			}
-		}
-	}
-
-	if(!pLanguage)
-		return pText;
-
-	if(!pLanguage->IsLoaded())
-		pLanguage->Load(this, Storage());
-
-	const char* pResult = pLanguage->Localize_P(Number, pText);
-	if(pResult)
-		return pResult;
-	if(pLanguage->GetParentFilename()[0] && Depth < 4)
-		return LocalizeWithDepth_P(pLanguage->GetParentFilename(), Number, pText, Depth + 1);
-	return pText;
-}
-
-const char* CLocalization::Localize_P(const char* pLanguageCode, int Number, const char* pText)
-{
-	return LocalizeWithDepth_P(pLanguageCode, Number, pText, 0);
-}
-
-static char* format_integer_with_commas(char commas, int n)
-{
-	char _number_array[64] = { '\0' };
-	str_format(_number_array, sizeof(_number_array), "%d", n); // %ll
-
-	char* _number_pointer = _number_array;
-	int _number_of_digits = 0;
-	while (*(_number_pointer + _number_of_digits++));
-	--_number_of_digits;
-
-	/*
-		count the number of digits
-		calculate the position for the first comma separator
-		calculate the final length of the number with commas
-
-		the starting position is a repeating sequence 123123... which depends on the number of digits
-		the length of the number with commas is the sequence 111222333444...
-	*/
-	const int _starting_separator_position = _number_of_digits < 4 ? 0 : _number_of_digits % 3 == 0 ? 3 : _number_of_digits % 3;
-	const int _formatted_number_length = _number_of_digits + _number_of_digits / 3 - (_number_of_digits % 3 == 0 ? 1 : 0);
-
-	// create formatted number array based on calculated information.
-	char* _formatted_number = new char[20 * 3 + 1];
-
-	// place all the commas
-	for (int i = _starting_separator_position; i < _formatted_number_length - 3; i += 4)
-		_formatted_number[i] = commas;
-
-	// place the digits
-	for (int i = 0, j = 0; i < _formatted_number_length; i++)
-		if (_formatted_number[i] != commas)
-			_formatted_number[i] = _number_pointer[j++];
-
-	/* close the string */
-	_formatted_number[_formatted_number_length] = '\0';
-	return _formatted_number;
 }
 
 void CLocalization::Format_V(dynamic_string& Buffer, const char* pLanguageCode, const char* pText, va_list VarArgs)
@@ -401,9 +257,7 @@ void CLocalization::Format_V(dynamic_string& Buffer, const char* pLanguageCode, 
 			else if(str_comp_num("VAL", pText + ParamTypeStart, 3) == 0) // value
 			{
 				const int pVarArgValue = va_arg(VarArgsIter, int);
-				char* aBuffer = format_integer_with_commas('.', pVarArgValue);
-				BufferIter = Buffer.append_at(BufferIter, aBuffer);
-				delete[] aBuffer;
+				BufferIter = Buffer.append_at(BufferIter, GetCommas<int>(pVarArgValue).c_str());
 			}
 
 			//
@@ -455,23 +309,6 @@ void CLocalization::Format_L(dynamic_string& Buffer, const char* pLanguageCode, 
 	va_start(VarArgs, pText);
 
 	Format_VL(Buffer, pLanguageCode, pText, VarArgs);
-
-	va_end(VarArgs);
-}
-
-void CLocalization::Format_VLP(dynamic_string& Buffer, const char* pLanguageCode, int Number, const char* pText, va_list VarArgs)
-{
-	const char* pLocalText = Localize_P(pLanguageCode, Number, pText);
-
-	Format_V(Buffer, pLanguageCode, pLocalText, VarArgs);
-}
-
-void CLocalization::Format_LP(dynamic_string& Buffer, const char* pLanguageCode, int Number, const char* pText, ...)
-{
-	va_list VarArgs;
-	va_start(VarArgs, pText);
-
-	Format_VLP(Buffer, pLanguageCode, Number, pText, VarArgs);
 
 	va_end(VarArgs);
 }

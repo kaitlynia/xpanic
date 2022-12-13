@@ -735,6 +735,7 @@ void CGameContext::ProgressVoteOptions(int ClientID)
 void CGameContext::OnClientEnter(int ClientID)
 {
 	m_apPlayers[ClientID]->m_Score = 0;
+	m_apPlayers[ClientID]->m_Authed = ((CServer*)Server())->m_aClients[ClientID].m_Authed;
 
 	if(((CServer *) Server())->m_aPrevStates[ClientID] < CServer::CClient::STATE_INGAME)
 	{
@@ -754,7 +755,6 @@ void CGameContext::OnClientEnter(int ClientID)
 	Chat(ClientID, "Use /cmdlist' for a list of commands");
 
 	m_pController->CheckZomb();
-	m_apPlayers[ClientID]->m_Authed = ((CServer*)Server())->m_aClients[ClientID].m_Authed;
 }
 
 void CGameContext::OnClientConnected(int ClientID)

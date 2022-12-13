@@ -91,29 +91,29 @@ void CWall::Tick()
 }
 void CWall::Snap(int SnappingClient)
 {
-	CNetObj_Laser *pObj = static_cast<CNetObj_Laser *>(Server()->SnapNewItem(NETOBJTYPE_LASER, m_ID, sizeof(CNetObj_Laser)));
-	if(!pObj)
+	CNetObj_Laser* pLaser = static_cast<CNetObj_Laser*>(Server()->SnapNewItem(NETOBJTYPE_LASER, m_ID2, sizeof(CNetObj_Laser)));
+	if(!pLaser)
 		return;
 
-	pObj->m_X = (int)m_Pos.x;
-	pObj->m_Y = (int)m_Pos.y;
-	pObj->m_FromX = (int)m_From.x;
-	pObj->m_FromY = (int)m_From.y;
+	pLaser->m_FromX = (int)m_From.x;
+	pLaser->m_FromY = (int)m_From.y;
+	pLaser->m_X = (int)m_From.x;
+	pLaser->m_Y = (int)m_From.y;
 	if(SnappingClient == m_Owner)
-		pObj->m_StartTick = Server()->Tick()-3;
+		pLaser->m_StartTick = Server()->Tick() - 3;
 	else
-		pObj->m_StartTick = Server()->Tick()-1;
+		pLaser->m_StartTick = Server()->Tick() - 1;
 
-	CNetObj_Laser *pObj2 = static_cast<CNetObj_Laser *>(Server()->SnapNewItem(NETOBJTYPE_LASER, m_ID2, sizeof(CNetObj_Laser)));
-	if (!pObj2)
+	CNetObj_Laser *pLaser2 = static_cast<CNetObj_Laser *>(Server()->SnapNewItem(NETOBJTYPE_LASER, m_ID, sizeof(CNetObj_Laser)));
+	if(!pLaser2)
 		return;
 
-	pObj2->m_FromX = (int)m_From.x;
-	pObj2->m_FromY = (int)m_From.y;
-	pObj2->m_X = (int)m_From.x;
-	pObj2->m_Y = (int)m_From.y;
+	pLaser2->m_X = (int)m_Pos.x;
+	pLaser2->m_Y = (int)m_Pos.y;
+	pLaser2->m_FromX = (int)m_From.x;
+	pLaser2->m_FromY = (int)m_From.y;
 	if(SnappingClient == m_Owner)
-		pObj2->m_StartTick = Server()->Tick()-3;
+		pLaser2->m_StartTick = Server()->Tick()-3;
 	else
-		pObj2->m_StartTick = Server()->Tick()-1;
+		pLaser2->m_StartTick = Server()->Tick()-1;
 }
