@@ -5,8 +5,6 @@
 
 #include <math.h>
 
-// ------------------------------------
-
 template<typename T>
 class vector2_base
 {
@@ -28,8 +26,6 @@ public:
 	vector2_base operator *(const vector2_base &v) const { return vector2_base(x*v.x, y*v.y); }
 	vector2_base operator /(const T v) const { return vector3_base(x/v, y/v); }
 	vector2_base operator /(const vector2_base &v) const { return vector2_base(x/v.x, y/v.y); }
-
-	const vector2_base &operator =(const vector2_base &v) { x = v.x; y = v.y; return *this; }
 
 	const vector2_base &operator +=(const vector2_base &v) { x += v.x; y += v.y; return *this; }
 	const vector2_base &operator -=(const vector2_base &v) { x -= v.x; y -= v.y; return *this; }
