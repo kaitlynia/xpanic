@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12...3.19.1)
+cmake_minimum_required(VERSION 3.16...3.19.1)
 if(CMAKE_VERSION VERSION_LESS 3.12)
   cmake_policy(VERSION ${CMAKE_VERSION})
 endif()
@@ -120,29 +120,6 @@ function(add_c_compiler_flag_if_supported VARIABLE FLAG)
   endif()
 endfunction()
 
-function(add_cxx_compiler_flag_if_supported VARIABLE FLAG)
-  if(ARGC GREATER 2)
-    set(CHECKED_FLAG "${ARGV2}")
-  else()
-    set(CHECKED_FLAG "${FLAG}")
-  endif()
-  string(REGEX REPLACE "[^A-Za-z0-9]" "_" CONFIG_VARIABLE "FLAG_SUPPORTED${CHECKED_FLAG}")
-  check_cxx_compiler_flag("${CHECKED_FLAG}" ${CONFIG_VARIABLE})
-  if(${CONFIG_VARIABLE})
-    if(${VARIABLE})
-      set("${VARIABLE}" "${${VARIABLE}} ${FLAG}" PARENT_SCOPE)
-    else()
-      set("${VARIABLE}" "${FLAG}" PARENT_SCOPE)
-    endif()
-  endif()
-endfunction()
-
-# Force compiler colors on when using ninja. Ninja filters the colors out when
-# it's not printing to a terminal on its own.
-if(CMAKE_GENERATOR STREQUAL "Ninja")
-  add_c_compiler_flag_if_supported(OUR_FLAGS -fdiagnostics-color=always)
-  add_c_compiler_flag_if_supported(OUR_FLAGS -fcolor-diagnostics)
-endif()
 
 if(NOT MSVC)
   # Protect the stack pointer.
@@ -152,19 +129,20 @@ if(NOT MSVC)
   # Inaccurate floating point numbers cause problems on mingw-w64-gcc when
   # compiling for x86, might cause problems elsewhere. So don't store floats
   # in registers but keep them at higher accuracy.
+
   if(TARGET_ARCH STREQUAL "x86")
     add_c_compiler_flag_if_supported(OUR_FLAGS -ffloat-store)
   endif()
 
-  # Don't insert timestamps into PEs to keep the build reproducible.
-  if(TARGET_OS STREQUAL "windows")
-    add_c_compiler_flag_if_supported(OUR_FLAGS_LINK -Wl,--no-insert-timestamp)
+  #if(TARGET_OS STREQUAL "mac")
+  #  add_c_compiler_flag_if_supported(OUR_FLAGS -stdlib=libc++)
+  #  add_c_compiler_flag_if_supported(OUR_FLAGS -mmacosx-version-min=10.7)
+  #endif()
+  
+  if(CMAKE_VERSION VERSION_LESS 3.1)
+    add_cxx_compiler_flag_if_supported(OUR_FLAGS_OWN -std=gnu++17)
   endif()
-
-  if(TARGET_OS STREQUAL "mac")
-    add_c_compiler_flag_if_supported(OUR_FLAGS -stdlib=libc++)
-  endif()
-
+  
   add_c_compiler_flag_if_supported(OUR_FLAGS_OWN -Wall)
   if(CMAKE_VERSION VERSION_GREATER 3.3 OR CMAKE_VERSION VERSION_EQUAL 3.3)
     add_c_compiler_flag_if_supported(OUR_FLAGS_OWN
@@ -172,32 +150,20 @@ if(NOT MSVC)
       -Wdeclaration-after-statement
     )
   endif()
-
   add_c_compiler_flag_if_supported(OUR_FLAGS_OWN -Wextra)
   add_c_compiler_flag_if_supported(OUR_FLAGS_OWN -Wno-unused-parameter)
   add_c_compiler_flag_if_supported(OUR_FLAGS_OWN -Wno-missing-field-initializers)
   add_c_compiler_flag_if_supported(OUR_FLAGS_OWN -Wformat=2) # Warn about format strings.
-  add_c_compiler_flag_if_supported(OUR_FLAGS_OWN -Wno-nullability-completeness) # Mac OS build on github
+
+  # sry, discord sdk is broken somehow and throws this error on linux
+  if (NOT TARGET_OS STREQUAL "linux")
+    add_c_compiler_flag_if_supported(OUR_FLAGS_DEP -Wno-implicit-function-declaration)
+  endif()
+
   add_c_compiler_flag_if_supported(OUR_FLAGS_OWN -Wduplicated-cond)
   add_c_compiler_flag_if_supported(OUR_FLAGS_OWN -Wduplicated-branches)
   add_c_compiler_flag_if_supported(OUR_FLAGS_OWN -Wlogical-op)
   add_c_compiler_flag_if_supported(OUR_FLAGS_OWN -Wrestrict)
-  add_c_compiler_flag_if_supported(OUR_FLAGS_OWN -Wno-cast-function-type)
-
-  # TODO: Enable for C++ code except gtest
-  #add_cxx_compiler_flag_if_supported(OUR_FLAGS_OWN "-Wuseless-cast")
-  add_cxx_compiler_flag_if_supported(OUR_CXX_FLAGS_OWN -Wno-deprecated-copy)
-  add_cxx_compiler_flag_if_supported(OUR_CXX_FLAGS_OWN -Wno-ignored-qualifiers)
-  add_cxx_compiler_flag_if_supported(OUR_CXX_FLAGS_OWN -Wno-cast-function-type)
-  add_cxx_compiler_flag_if_supported(OUR_CXX_FLAGS_OWN -std=gnu++11)
-
-  if(OUR_CXX_FLAGS_OWN)
-    if(CMAKE_CXX_FLAGS)
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OUR_CXX_FLAGS_OWN}")
-    else()
-      set(CMAKE_CXX_FLAGS ${OUR_CXX_FLAGS_OWN})
-    endif()
-  endif()
 endif()
 
 if(NOT MSVC)
@@ -314,7 +280,6 @@ if(NOT CMAKE_CROSSCOMPILING)
 endif()
 find_package(ZLIB)
 find_package(OpenSSL)
-find_package(ICU)
 find_package(PythonInterp 3)
 find_package(Threads)
 
@@ -338,13 +303,9 @@ endfunction()
 show_dependency_status("OpenSSL" OPENSSL)
 show_dependency_status("PythonInterp" PYTHONINTERP)
 show_dependency_status("Zlib" ZLIB)
-show_dependency_status("ICU" ICU)
 
 if(NOT(PYTHONINTERP_FOUND))
   message(SEND_ERROR "You must install Python to compile the ${PROJECT_NAME}")
-endif()
-if(NOT(ICU_FOUND))
-  message(SEND_ERROR "You must install ICU to compile Teeworlds")
 endif()
 
 if(TARGET_OS STREQUAL "windows")
@@ -360,6 +321,7 @@ endif()
 ########################################################################
 set_src(DEP_JSON_SRC GLOB src/engine/external/json-parser json.c json.h)
 add_library(json EXCLUDE_FROM_ALL OBJECT ${DEP_JSON_SRC})
+
 set_src(DEP_MD5_SRC GLOB src/engine/external/md5 md5.c md5.h)
 add_library(md5 EXCLUDE_FROM_ALL OBJECT ${DEP_MD5_SRC})
 
@@ -374,7 +336,6 @@ file(COPY maps DESTINATION .)
 file(COPY server_lang DESTINATION .)
 set(COPY_FILES
   autoexec_server.cfg
-  ${ICU_COPY_FILES}
   ${OPENSSL_COPY_FILES}
 )
 file(COPY ${COPY_FILES} DESTINATION .)
@@ -435,40 +396,40 @@ function(generate_maps output_file)
   )
 endfunction()
 
-file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/src/game/generated/")
-execute_process(COMMAND git rev-parse --git-dir
-  ERROR_QUIET
-  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-  OUTPUT_VARIABLE PROJECT_GIT_DIR
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-  RESULT_VARIABLE PROJECT_GIT_DIR_ERROR
-)
-if(NOT PROJECT_GIT_DIR_ERROR)
-  set(GIT_REVISION_EXTRA_DEPS
-    ${PROJECT_GIT_DIR}/index
-    ${PROJECT_GIT_DIR}/logs/HEAD
+file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/src/generated/")
+if(GIT_FOUND)
+  execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --git-dir
+    ERROR_QUIET
+    OUTPUT_VARIABLE PROJECT_GIT_DIR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    RESULT_VARIABLE PROJECT_GIT_DIR_ERROR
   )
+  if(NOT PROJECT_GIT_DIR_ERROR)
+    set(GIT_REVISION_EXTRA_DEPS
+      ${PROJECT_GIT_DIR}/index
+      ${PROJECT_GIT_DIR}/logs/HEAD
+    )
+  endif()
 endif()
-add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/src/game/generated/git_revision.cpp
+add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/src/generated/git_revision.cpp
   COMMAND ${PYTHON_EXECUTABLE}
     scripts/git_revision.py
-    > ${PROJECT_BINARY_DIR}/src/game/generated/git_revision.cpp
+    > ${PROJECT_BINARY_DIR}/src/generated/git_revision.cpp
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
   DEPENDS
     ${GIT_REVISION_EXTRA_DEPS}
     scripts/git_revision.py
 )
-
-chash("src/game/generated/nethash.cpp"
+chash("src/generated/nethash.cpp"
   "src/engine/shared/protocol.h"
   "src/game/tuning.h"
   "src/game/gamecore.cpp"
-  "${PROJECT_BINARY_DIR}/src/game/generated/protocol.h"
+  "${PROJECT_BINARY_DIR}/src/generated/protocol.h"
 )
-generate_source("src/game/generated/protocol.cpp" "network_source")
-generate_source("src/game/generated/protocol.h" "network_header")
-generate_source("src/game/generated/server_data.cpp" "server_content_source")
-generate_source("src/game/generated/server_data.h" "server_content_header")
+generate_source("src/generated/protocol.cpp" "network_source")
+generate_source("src/generated/protocol.h" "network_header")
+generate_source("src/generated/server_data.cpp" "server_content_source")
+generate_source("src/generated/server_data.h" "server_content_header")
 
 ########################################################################
 # SHARED
@@ -480,14 +441,14 @@ file(GLOB ENGINE_SHARED "src/engine/shared/*.cpp" "src/engine/shared/*.h")
 file(GLOB GAME_SHARED "src/game/*.cpp" "src/game/*.h")
 
 set(ENGINE_GENERATED_SHARED 
-  src/game/generated/nethash.cpp 
-  src/game/generated/protocol.cpp 
-  src/game/generated/protocol.h
+  src/generated/nethash.cpp 
+  src/generated/protocol.cpp 
+  src/generated/protocol.h
 )
 set(GAME_GENERATED_SHARED
-  src/game/generated/git_revision.cpp
-  src/game/generated/nethash.cpp
-  src/game/generated/protocol.h
+  src/generated/git_revision.cpp
+  src/generated/nethash.cpp
+  src/generated/protocol.h
 )
 
 set(DEPS ${DEP_JSON} ${DEP_MD5} ${ZLIB_DEP})
@@ -508,8 +469,8 @@ list(APPEND TARGETS_OWN engine-shared game-shared)
 # Sources
 file(GLOB_RECURSE ENGINE_SERVER "src/engine/server/*.cpp" "src/engine/server/*.h")
 file(GLOB_RECURSE GAME_SERVER "src/game/server/*.cpp" "src/game/server/*.h")
-file(GLOB_RECURSE TEEOTHER_SERVER "src/teeuniverses/*.cpp" "src/teeuniverses/*.h")
-set(GAME_GENERATED_SERVER "src/game/generated/server_data.cpp" "src/game/generated/server_data.h")
+file(GLOB_RECURSE TEEOTHER_SERVER "src/teeother/*.cpp" "src/teeother/*.h")
+set(GAME_GENERATED_SERVER "src/generated/server_data.cpp" "src/generated/server_data.h")
 set(SERVER_SRC ${ENGINE_SERVER} ${GAME_SERVER} ${TEEOTHER_SERVER} ${GAME_GENERATED_SERVER})
 
 set(SERVER_ICON)
@@ -530,13 +491,7 @@ add_executable(${TARGET_SERVER}
 # Libraries
 set(LIBS_SERVER
   ${LIBS}
-  ${ICU_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}
-)
-
-# Includes
-set(INCLUDES_SERVER
-  ${ICU_INCLUDE_DIRS}
 )
 
 target_include_directories(${TARGET_SERVER} PRIVATE ${INCLUDES_SERVER})
@@ -852,9 +807,10 @@ foreach(target ${TARGETS_LINK})
 endforeach()
 
 foreach(target ${TARGETS_OWN})
-  if(CMAKE_VERSION VERSION_GREATER 3.1 OR CMAKE_VERSION VERSION_EQUAL 3.1)
-    set_property(TARGET ${target} PROPERTY CXX_STANDARD 11)
+  if((CMAKE_VERSION VERSION_GREATER 3.1 OR CMAKE_VERSION VERSION_EQUAL 3.1))
+    set_property(TARGET ${target} PROPERTY CXX_STANDARD 17)
     set_property(TARGET ${target} PROPERTY CXX_STANDARD_REQUIRED ON)
+    set_property(TARGET ${target} PROPERTY CXX_EXTENSIONS OFF)
   endif()
   if(MSVC)
     target_compile_options(${target} PRIVATE /wd4244) # Possible loss of data (float -> int, int -> float, etc.).

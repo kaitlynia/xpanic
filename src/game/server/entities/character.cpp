@@ -364,7 +364,7 @@ void CCharacter::FireWeapon()
 				if (m_RiflePos == m_Pos)
 				{
 					m_aWeapons[WEAPON_RIFLE].m_Ammo = 2;
-					GameServer()->SendChatTarget(m_pPlayer->GetCID(), "The second point can not be set here");
+					GameServer()->Chat(m_pPlayer->GetCID(), "The second point can not be set here");
 					m_RiflePos = vec2(0, 0);
 					return;
 				}
@@ -669,9 +669,7 @@ void CCharacter::ExperienceAdd(int Exp, int ClientID)
 	}
 	else
 	{
-		char SendExp[64];
-		str_format(SendExp, sizeof(SendExp), "Exp %d/%d", pPlayer->m_AccData.m_Exp, pPlayer->m_AccData.m_Level);
-		GameServer()->SendChatTarget(ClientID, SendExp);
+		GameServer()->Chat(ClientID, "Exp {VAL}/{VAL}", pPlayer->m_AccData.m_Exp, pPlayer->m_AccData.m_Level);
 	}
 }
 
@@ -779,9 +777,7 @@ bool CCharacter::TakeDamage(vec2 Force, int Dmg, int From, int Weapon)
 			GameServer()->m_apPlayers[From]->m_KillingSpree++;
 			if(GameServer()->m_apPlayers[From]->m_KillingSpree == g_Config.m_SvKillingSpree)
 			{
-				char aBuf[48];
-				str_format(aBuf, sizeof(aBuf), "%s is on killing spree!", Server()->ClientName(From));
-				GameServer()->SendChatTarget(-1, aBuf);
+				GameServer()->Chat(-1, "{STR} is on killing spree!", Server()->ClientName(From));
 			}
 		}
 		
@@ -1099,7 +1095,7 @@ void CCharacter::HandleTiles(int Index)
 	// unlimited air jumps
 	if(((m_TileIndex == TILE_SUPER_START) || (m_TileFIndex == TILE_SUPER_START)) && !m_SuperJump)
 	{
-		GameServer()->SendChatTarget(GetPlayer()->GetCID(),"You have unlimited air jumps");
+		GameServer()->Chat(GetPlayer()->GetCID(),"You have unlimited air jumps");
 		m_SuperJump = true;
 		if (m_Core.m_Jumps == 0)
 		{
@@ -1109,7 +1105,7 @@ void CCharacter::HandleTiles(int Index)
 	}
 	else if(((m_TileIndex == TILE_SUPER_END) || (m_TileFIndex == TILE_SUPER_END)) && m_SuperJump)
 	{
-		GameServer()->SendChatTarget(GetPlayer()->GetCID(), "You don't have unlimited air jumps");
+		GameServer()->Chat(GetPlayer()->GetCID(), "You don't have unlimited air jumps");
 		m_SuperJump = false;
 		if (m_Core.m_Jumps == 0)
 		{
@@ -1311,9 +1307,9 @@ void CCharacter::SendZoneMsgs()
 			str_copy(aBuf, cur, pos - cur + 1);
 			aBuf[pos - cur + 1] = '\0';
 			cur = pos + 2;
-			GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf);
+			GameServer()->Chat(m_pPlayer->GetCID(), aBuf);
 		}
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), cur);
+		GameServer()->Chat(m_pPlayer->GetCID(), cur);
 	}
 	// send zone enter msg
 	if (GameServer()->m_ZoneEnterMsg[m_TuneZone])
@@ -1326,9 +1322,9 @@ void CCharacter::SendZoneMsgs()
 			str_copy(aBuf, cur, pos - cur + 1);
 			aBuf[pos - cur + 1] = '\0';
 			cur = pos + 2;
-			GameServer()->SendChatTarget(m_pPlayer->GetCID(), aBuf);
+			GameServer()->Chat(m_pPlayer->GetCID(), aBuf);
 		}
-		GameServer()->SendChatTarget(m_pPlayer->GetCID(), cur);
+		GameServer()->Chat(m_pPlayer->GetCID(), cur);
 	}
 }
 

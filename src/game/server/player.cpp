@@ -113,9 +113,7 @@ void CPlayer::Tick()
 			if (m_AccData.m_UserID)
 				m_pAccount->Apply();
 
-			char SendLVL[64];
-			str_format(SendLVL, sizeof(SendLVL), "Successfully! Your new level %d\n/ Upgrade counts %d", m_AccData.m_Level, m_AccData.m_Money);
-			GameServer()->SendChatTarget(m_ClientID, SendLVL);
+			GameServer()->Chat(m_ClientID, "Successfully! Your new level {INT}\n/ Upgrade counts {VAL}", m_AccData.m_Level, m_AccData.m_Money);
 		}
 	}
 	
@@ -219,18 +217,25 @@ void CPlayer::Snap(int SnappingClient)
 	if(!pClientInfo)
 		return;
 
-	char pSendName[22];
+	char pSendName[MAX_NAME_LENGTH];
 	if (m_AccData.m_UserID)
 	{
-		if (m_AccData.m_UserID == g_Config.m_SvOwnerAccID && m_Prefix) str_format(pSendName, sizeof(pSendName), "[O]%s", Server()->ClientName(m_ClientID));
-		else if(Server()->IsAuthed(GetCID()) && m_Prefix) str_format(pSendName, sizeof(pSendName), "[A]%s", Server()->ClientName(m_ClientID));
-		else if(m_AccData.m_PlayerState == 1) str_format(pSendName, sizeof(pSendName), "[P-%d]%s", m_AccData.m_Level, Server()->ClientName(m_ClientID));
-		else if(m_AccData.m_PlayerState == 2 && m_Prefix) str_format(pSendName, sizeof(pSendName), "[VIP]%s", Server()->ClientName(m_ClientID));
-		else if(m_AccData.m_PlayerState == 3) str_format(pSendName, sizeof(pSendName), "[H-%d]%s", m_AccData.m_Level, Server()->ClientName(m_ClientID));
-		else str_format(pSendName, sizeof(pSendName), "[%d]%s", m_AccData.m_Level, Server()->ClientName(m_ClientID));
-		
-		if(m_AccData.m_Freeze)
+		if (m_AccData.m_UserID == g_Config.m_SvOwnerAccID && m_Prefix) 
+			str_format(pSendName, sizeof(pSendName), "[O]%s", Server()->ClientName(m_ClientID));
+		else if(Server()->IsAuthed(GetCID()) && m_Prefix) 
+			str_format(pSendName, sizeof(pSendName), "[A]%s", Server()->ClientName(m_ClientID));
+		else if(m_AccData.m_PlayerState == PlayerGroup::POLICE) 
+			str_format(pSendName, sizeof(pSendName), "[P-%d]%s", m_AccData.m_Level, Server()->ClientName(m_ClientID));
+		else if(m_AccData.m_PlayerState == PlayerGroup::VIP && m_Prefix)
+			str_format(pSendName, sizeof(pSendName), "[VIP]%s", Server()->ClientName(m_ClientID));
+		else if(m_AccData.m_PlayerState == PlayerGroup::HELPER)
+			str_format(pSendName, sizeof(pSendName), "[H-%d]%s", m_AccData.m_Level, Server()->ClientName(m_ClientID));
+		else if (m_AccData.m_Freeze)
 			str_format(pSendName, sizeof(pSendName), "[F-%d]%s", m_AccData.m_Level, Server()->ClientName(m_ClientID));
+		else 
+			str_format(pSendName, sizeof(pSendName), "[%d]%s", m_AccData.m_Level, Server()->ClientName(m_ClientID));
+		
+		str_utf8_trim_right(pSendName);
 	}
 	StrToInts(&pClientInfo->m_Name0, 4, m_AccData.m_UserID ? pSendName : Server()->ClientName(m_ClientID));
 	StrToInts(&pClientInfo->m_Clan0, 3, Server()->ClientClan(m_ClientID));
@@ -506,7 +511,7 @@ bool CPlayer::AfkTimer(int NewTargetX, int NewTargetY)
 				(int)(g_Config.m_SvMaxAfkTime*0.5),
 				g_Config.m_SvMaxAfkTime
 			);
-			m_pGameServer->SendChatTarget(m_ClientID, m_pAfkMsg);
+			m_pGameServer->Chat(m_ClientID, m_pAfkMsg);
 			m_Sent1stAfkWarning = 1;
 		}
 		else if(m_Sent2ndAfkWarning == 0 && m_LastPlaytime < time_get()-time_freq()*(int)(g_Config.m_SvMaxAfkTime*0.9))
@@ -517,7 +522,7 @@ bool CPlayer::AfkTimer(int NewTargetX, int NewTargetY)
 				(int)(g_Config.m_SvMaxAfkTime*0.9),
 				g_Config.m_SvMaxAfkTime
 			);
-			m_pGameServer->SendChatTarget(m_ClientID, m_pAfkMsg);
+			m_pGameServer->Chat(m_ClientID, m_pAfkMsg);
 			m_Sent2ndAfkWarning = 1;
 		}
 		else if(m_LastPlaytime < time_get()-time_freq()*g_Config.m_SvMaxAfkTime)
@@ -586,7 +591,7 @@ void CPlayer::SetZomb(int From)
 	m_pCharacter->SetZomb();
 	GameServer()->m_pController->OnPlayerInfoChange(GameServer()->m_apPlayers[m_ClientID]);
 	GameServer()->m_pController->CheckZomb();
-	GameServer()->SendChatTarget(m_ClientID, "You are now a zombie! Eat some brains.");
+	GameServer()->Chat(m_ClientID, "You are now a zombie! Eat some brains.");
 }
 
 void CPlayer::ResetZomb()

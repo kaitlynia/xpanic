@@ -204,13 +204,10 @@ void IGameController::EndRound()
 						float d = GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Luser;
 						float kofs = (k / (k + d)) * 100;
 
-						char aBuf[64];
-						GameServer()->SendChatTarget(-1, "----------------------------------");
-						str_format(aBuf, sizeof(aBuf), "Zombie: %s (WIN)", Server()->ClientName(m_LastZomb));
-						GameServer()->SendChatTarget(-1, aBuf);
-						str_format(aBuf, sizeof(aBuf), "Win: %d / Lose: %d (%.1f)", GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Winner, GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Luser, kofs);
-						GameServer()->SendChatTarget(-1, aBuf);
-						GameServer()->SendChatTarget(-1, "----------------------------------");
+						GameServer()->Chat(-1, "----------------------------------");
+						GameServer()->Chat(-1, "Zombie: {STR} (WIN)", Server()->ClientName(m_LastZomb));
+						GameServer()->Chat(-1, "Win: {INT} / Lose: {INT} ({INT})", GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Winner, GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Luser, kofs);
+						GameServer()->Chat(-1, "----------------------------------");
 					}
 				}
 			m_aTeamscore[TEAM_RED] = 100;
@@ -234,13 +231,10 @@ void IGameController::EndRound()
 						float d = GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Luser;
 						float kofs = (k / (k + d)) * 100;
 
-						char aBuf[64];
-						GameServer()->SendChatTarget(-1, "----------------------------------");
-						str_format(aBuf, sizeof(aBuf), "Zombie: %s (LOSE)", Server()->ClientName(m_LastZomb));
-						GameServer()->SendChatTarget(-1, aBuf);
-						str_format(aBuf, sizeof(aBuf), "Win: %d / Lose: %d (%.1f)", GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Winner, GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Luser, kofs);
-						GameServer()->SendChatTarget(-1, aBuf);
-						GameServer()->SendChatTarget(-1, "----------------------------------");
+						GameServer()->Chat(-1, "----------------------------------");
+						GameServer()->Chat(-1, "Zombie: {STR} (LOSE)", Server()->ClientName(m_LastZomb));
+						GameServer()->Chat(-1, "Win: {INT} / Lose: {INT} ({INT})", GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Winner, GameServer()->m_apPlayers[m_LastZomb]->m_AccData.m_Luser, kofs);
+						GameServer()->Chat(-1, "----------------------------------");
 					}
 				}
 			m_aTeamscore[TEAM_BLUE] = 100;

@@ -121,6 +121,7 @@ public:
 
 		float m_Traffic;
 		int64 m_TrafficSince;
+		int m_NextMapChunk;
 
 		int m_LastAckedSnapshot;
 		int m_LastInputTick;
@@ -132,6 +133,8 @@ public:
 
 		char m_aName[MAX_NAME_LENGTH];
 		char m_aClan[MAX_CLAN_LENGTH];
+		char m_aLanguage[MAX_LANGUAGE_LENGTH];
+
 		int m_Country;
 		int m_Score;
 		int m_Authed;
@@ -186,7 +189,7 @@ public:
 
 	CServer();
 
-	int TrySetClientName(int ClientID, const char *pName);
+	bool TrySetClientName(int ClientID, const char *pName);
 
 	virtual void SetClientName(int ClientID, const char *pName);
 	virtual void SetClientClan(int ClientID, char const *pClan);
@@ -214,6 +217,10 @@ public:
 	const char *ClientClan(int ClientID);
 	int ClientCountry(int ClientID);
 	bool ClientIngame(int ClientID);
+
+	virtual void SetClientLanguage(int ClientID, const char* pLanguage);
+	virtual const char* GetClientLanguage(int ClientID) const;
+
 	int MaxClients() const;
 
 	virtual int SendMsg(CMsgPacker *pMsg, int Flags, int ClientID);
@@ -228,6 +235,7 @@ public:
 	static int ClientRejoinCallback(int ClientID, void *pUser);
 
 	void SendMap(int ClientID);
+	void SendMapData(int ClientID, int Chunk);
 	void SendConnectionReady(int ClientID);
 	void SendRconLine(int ClientID, const char *pLine);
 	static void SendRconLineAuthed(const char *pLine, void *pUser, bool Highlighted = false);

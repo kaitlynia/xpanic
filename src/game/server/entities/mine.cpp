@@ -1,7 +1,6 @@
-#include <engine/shared/config.h>
 #include <game/generated/protocol.h>
 #include <game/server/gamecontext.h>
-#include "game/server/gamecontroller.h"
+
 #include "mine.h"
 
 CMine::CMine(CGameWorld *pGameWorld, vec2 Pos, int Owner)
@@ -9,40 +8,39 @@ CMine::CMine(CGameWorld *pGameWorld, vec2 Pos, int Owner)
 {
 	m_Pos = Pos;
 	m_Owner = Owner;
+
 	GameWorld()->InsertEntity(this);
 }
 
-void CMine::HitCharacter()
+bool CMine::HitCharacter()
 {
+	bool Result = false;
 	CCharacter *apCloseCCharacters[MAX_CLIENTS];
-	int Num = GameServer()->m_World.FindEntities(m_Pos, 8.0f, (CEntity**)apCloseCCharacters, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
-	for(int i = 0; i < Num; i++)
+	if (const int Num = GameServer()->m_World.FindEntities(m_Pos, 8.0f, (CEntity**)apCloseCCharacters, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER))
 	{
-		if(apCloseCCharacters[i]->GetPlayer()->GetTeam() == TEAM_RED)
-            return;
-		float Len = distance(apCloseCCharacters[i]->m_Pos, m_Pos);
-		if(Len < apCloseCCharacters[i]->m_ProximityRadius+2.0f)
+		for (int i = 0; i < Num; i++)
 		{
-			GameServer()->CreateSound(m_Pos, SOUND_GRENADE_EXPLODE);
-			apCloseCCharacters[i]->m_BurnTick = Server()->TickSpeed()*2.0f;
-			Reset();
-			return;
+			if (apCloseCCharacters[i]->GetPlayer()->GetTeam() == TEAM_RED)
+				continue;
+
+			const float Len = distance(apCloseCCharacters[i]->m_Pos, m_Pos);
+			if (Len < apCloseCCharacters[i]->m_ProximityRadius + 2.0f)
+			{
+				Result = true;
+				apCloseCCharacters[i]->m_BurnTick = Server()->TickSpeed() * 2;
+			}
 		}
 	}
-}
-
-void CMine::Reset()
-{
-	GameWorld()->DestroyEntity(this);
+	return Result;
 }
 
 void CMine::Tick()
 {	
-	if (!GameServer()->GetPlayerChar(m_Owner) || GameServer()->m_apPlayers[m_Owner]->GetTeam() == TEAM_BLUE 
-			|| GameServer()->m_apPlayers[m_Owner]->GetTeam() == TEAM_SPECTATORS) 
-		return Reset();
-	
-	HitCharacter();
+	if (!GameServer()->GetPlayerChar(m_Owner) || GameServer()->m_apPlayers[m_Owner]->GetTeam() != TEAM_RED || HitCharacter())
+	{
+		GameServer()->CreateSound(m_Pos, SOUND_GRENADE_EXPLODE);
+		GameWorld()->DestroyEntity(this);
+	}
 }
 
 void CMine::Snap(int SnappingClient)

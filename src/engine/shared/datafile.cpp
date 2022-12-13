@@ -133,7 +133,7 @@ bool CDataFileReader::Open(class IStorage *pStorage, const char *pFilename, int 
 	AllocSize += sizeof(CDatafile); // add space for info structure
 	AllocSize += Header.m_NumRawData*sizeof(void*); // add space for data pointers
 
-	CDatafile *pTmpDataFile = (CDatafile*)calloc(AllocSize, 1);
+	CDatafile* pTmpDataFile = (CDatafile*)malloc(AllocSize);
 	pTmpDataFile->m_Header = Header;
 	pTmpDataFile->m_DataStartOffset = sizeof(CDatafileHeader) + Size;
 	pTmpDataFile->m_ppDataPtrs = (char**)(pTmpDataFile+1);
@@ -291,12 +291,12 @@ void *CDataFileReader::GetDataImpl(int Index, int Swap)
 		if(m_pDataFile->m_Header.m_Version == 4)
 		{
 			// v4 has compressed data
-			void *pTemp = (char *)calloc(DataSize, 1);
+			void* pTemp = (char*)malloc(DataSize);
 			unsigned long UncompressedSize = m_pDataFile->m_Info.m_pDataSizes[Index];
 			unsigned long s;
 
 			dbg_msg("datafile", "loading data index=%d size=%d uncompressed=%d", Index, DataSize, UncompressedSize);
-			m_pDataFile->m_ppDataPtrs[Index] = (char *)calloc(UncompressedSize, 1);
+			m_pDataFile->m_ppDataPtrs[Index] = (char*)malloc(UncompressedSize);
 
 			// read the compressed data
 			io_seek(m_pDataFile->m_File, m_pDataFile->m_DataStartOffset+m_pDataFile->m_Info.m_pDataOffsets[Index], IOSEEK_START);
@@ -316,7 +316,7 @@ void *CDataFileReader::GetDataImpl(int Index, int Swap)
 		{
 			// load the data
 			dbg_msg("datafile", "loading data index=%d size=%d", Index, DataSize);
-			m_pDataFile->m_ppDataPtrs[Index] = (char *)calloc(DataSize, 1);
+			m_pDataFile->m_ppDataPtrs[Index] = (char*)malloc(DataSize);
 			io_seek(m_pDataFile->m_File, m_pDataFile->m_DataStartOffset+m_pDataFile->m_Info.m_pDataOffsets[Index], IOSEEK_START);
 			io_read(m_pDataFile->m_File, m_pDataFile->m_ppDataPtrs[Index], DataSize);
 		}
@@ -437,9 +437,9 @@ unsigned CDataFileReader::Crc()
 CDataFileWriter::CDataFileWriter()
 {
 	m_File = 0;
-	m_pItemTypes = static_cast<CItemTypeInfo *>(calloc(sizeof(CItemTypeInfo) * MAX_ITEM_TYPES, 1));
-	m_pItems = static_cast<CItemInfo *>(calloc(sizeof(CItemInfo) * MAX_ITEMS, 1));
-	m_pDatas = static_cast<CDataInfo *>(calloc(sizeof(CDataInfo) * MAX_DATAS, 1));
+	m_pItemTypes = static_cast<CItemTypeInfo*>(malloc(sizeof(CItemTypeInfo) * MAX_ITEM_TYPES));
+	m_pItems = static_cast<CItemInfo*>(malloc(sizeof(CItemInfo) * MAX_ITEMS));
+	m_pDatas = static_cast<CDataInfo*>(malloc(sizeof(CDataInfo) * MAX_DATAS));
 }
 
 CDataFileWriter::~CDataFileWriter()
@@ -491,7 +491,7 @@ int CDataFileWriter::AddItem(int Type, int ID, int Size, void *pData)
 	m_pItems[m_NumItems].m_Size = Size;
 
 	// copy data
-	m_pItems[m_NumItems].m_pData = calloc(Size, 1);
+	m_pItems[m_NumItems].m_pData = malloc(Size);
 	mem_copy(m_pItems[m_NumItems].m_pData, pData, Size);
 
 	if(!m_pItemTypes[Type].m_Num) // count item types
@@ -520,7 +520,7 @@ int CDataFileWriter::AddData(int Size, void *pData)
 
 	CDataInfo *pInfo = &m_pDatas[m_NumDatas];
 	unsigned long s = compressBound(Size);
-	void *pCompData = calloc(s, 1); // temporary buffer that we use during compression
+	void* pCompData = malloc(s); // temporary buffer that we use during compression
 
 	int Result = compress((Bytef*)pCompData, &s, (Bytef*)pData, Size); // ignore_convention
 	if(Result != Z_OK)
@@ -531,7 +531,7 @@ int CDataFileWriter::AddData(int Size, void *pData)
 
 	pInfo->m_UncompressedSize = Size;
 	pInfo->m_CompressedSize = (int)s;
-	pInfo->m_pCompressedData = calloc(pInfo->m_CompressedSize, 1);
+	pInfo->m_pCompressedData = malloc(pInfo->m_CompressedSize);
 	mem_copy(pInfo->m_pCompressedData, pCompData, pInfo->m_CompressedSize);
 	free(pCompData);
 

@@ -13,10 +13,9 @@ class CMine : public CEntity
 public:
 	CMine(CGameWorld *pGameWorld, vec2 Pos, int Owner);
 
-	virtual void Reset();
 	virtual void Tick();
 	virtual void Snap(int SnappingClient);
-	void HitCharacter();
+	bool HitCharacter();
 
 private:
 	int m_Owner;

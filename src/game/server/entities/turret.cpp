@@ -197,9 +197,7 @@ void CTurret::Fire()
 					
 						if(g_Config.m_SvChatDestroyWall)
 						{
-							char aBuf[64];
-							str_format(aBuf, sizeof(aBuf), "%s destroyed turret wall hearted", Server()->ClientName(m_Owner));
-							GameServer()->SendChatTarget(-1, aBuf);
+							GameServer()->Chat(-1, "{STR} destroyed turret wall hearted", Server()->ClientName(m_Owner));
 						}
 					
 						GameServer()->CreateSound(pClosest->m_Pos, 35);
@@ -258,9 +256,7 @@ void CTurret::ExperienceTAdd()
 		if(pPlayer->m_AccData.m_UserID)
 			pPlayer->m_pAccount->Apply();
 
-		char SendExp[64];
-		str_format(SendExp, sizeof(SendExp), "Turret's Level-Up! Your turret's level now is: %d", pPlayer->m_AccData.m_TurretLevel);
-		GameServer()->SendChatTarget(m_Owner, SendExp);
+		GameServer()->Chat(m_Owner, "Turret's Level-Up! Your turret's level now is: {INT}", pPlayer->m_AccData.m_TurretLevel);
 	}
 }
 

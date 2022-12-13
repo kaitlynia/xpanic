@@ -30,11 +30,11 @@
 
 enum
 {
-	NETMSG_NULL=0,
+	NETMSG_NULL = 0,
 
 	// the first thing sent by the client
 	// contains the version info for the client
-	NETMSG_INFO=1,
+	NETMSG_INFO = 1,
 
 	// sent by server
 	NETMSG_MAP_CHANGE,		// sent when client should switch map
@@ -86,6 +86,7 @@ enum
 
 	MAX_NAME_LENGTH=16,
 	MAX_CLAN_LENGTH=12,
+	MAX_LANGUAGE_LENGTH=16,
 
 	// message packing
 	MSGFLAG_VITAL=1,
