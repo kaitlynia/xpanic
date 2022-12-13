@@ -441,14 +441,14 @@ file(GLOB ENGINE_SHARED "src/engine/shared/*.cpp" "src/engine/shared/*.h")
 file(GLOB GAME_SHARED "src/game/*.cpp" "src/game/*.h")
 
 set(ENGINE_GENERATED_SHARED 
-  src/game/generated/nethash.cpp 
-  src/game/generated/protocol.cpp 
-  src/game/generated/protocol.h
+  src/generated/nethash.cpp 
+  src/generated/protocol.cpp 
+  src/generated/protocol.h
 )
 set(GAME_GENERATED_SHARED
-  src/game/generated/git_revision.cpp
-  src/game/generated/nethash.cpp
-  src/game/generated/protocol.h
+  src/generated/git_revision.cpp
+  src/generated/nethash.cpp
+  src/generated/protocol.h
 )
 
 set(DEPS ${DEP_JSON} ${DEP_MD5} ${ZLIB_DEP})
@@ -470,7 +470,7 @@ list(APPEND TARGETS_OWN engine-shared game-shared)
 file(GLOB_RECURSE ENGINE_SERVER "src/engine/server/*.cpp" "src/engine/server/*.h")
 file(GLOB_RECURSE GAME_SERVER "src/game/server/*.cpp" "src/game/server/*.h")
 file(GLOB_RECURSE TEEOTHER_SERVER "src/teeother/*.cpp" "src/teeother/*.h")
-set(GAME_GENERATED_SERVER "src/game/generated/server_data.cpp" "src/game/generated/server_data.h")
+set(GAME_GENERATED_SERVER "src/generated/server_data.cpp" "src/generated/server_data.h")
 set(SERVER_SRC ${ENGINE_SERVER} ${GAME_SERVER} ${TEEOTHER_SERVER} ${GAME_GENERATED_SERVER})
 
 set(SERVER_ICON)
