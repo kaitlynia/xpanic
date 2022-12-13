@@ -608,46 +608,69 @@ void aio_wait(ASYNCIO *aio)
 	thread_wait(thread);
 }
 
-void *thread_create(void (*threadfunc)(void *), void *u)
+struct THREAD_RUN
 {
+	void (*threadfunc)(void*);
+	void* u;
+};
+
 #if defined(CONF_FAMILY_UNIX)
-	pthread_t id;
-	pthread_create(&id, NULL, (void *(*)(void*))threadfunc, u);
-	return (void*)id;
+static void* thread_run(void* user)
 #elif defined(CONF_FAMILY_WINDOWS)
-	return CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)threadfunc, u, 0, NULL);
+static unsigned long __stdcall thread_run(void* user)
 #else
-	#error not implemented
+#error not implemented
 #endif
+{
+	struct THREAD_RUN* data = (struct THREAD_RUN*)user;
+	void (*threadfunc)(void*) = data->threadfunc;
+	void* u = data->u;
+	free(data);
+	threadfunc(u);
+	return 0;
 }
 
-void *thread_init(void (*threadfunc)(void *), void *u)
+void* thread_init(void(*threadfunc)(void*), void* u, const char* name)
 {
+	struct THREAD_RUN* data = (struct THREAD_RUN*)malloc(sizeof(*data));
+	data->threadfunc = threadfunc;
+	data->u = u;
 #if defined(CONF_FAMILY_UNIX)
-	pthread_t id;
-	if(pthread_create(&id, NULL, (void *(*)(void*))threadfunc, u) != 0)
 	{
-		return 0;
+		pthread_t id;
+		int result = pthread_create(&id, NULL, thread_run, data);
+		if(result != 0)
+		{
+			dbg_msg("thread", "creating %s thread failed: %d", name, result);
+			return 0;
 	}
-	return (void*)id;
+		return (void*)id;
+	}
 #elif defined(CONF_FAMILY_WINDOWS)
-	return CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)threadfunc, u, 0, NULL);
+	return CreateThread(NULL, 0, thread_run, data, 0, NULL);
 #else
-	#error not implemented
+#error not implemented
 #endif
 }
 
-void thread_wait(void *thread)
+void thread_wait(void* thread)
 {
 #if defined(CONF_FAMILY_UNIX)
-	int result = pthread_join((pthread_t)thread, NULL);
-	if(result != 0)
-		dbg_msg("thread", "!! %d", result);
+	pthread_join((pthread_t)thread, NULL);
 #elif defined(CONF_FAMILY_WINDOWS)
 	WaitForSingleObject((HANDLE)thread, INFINITE);
-	CloseHandle(thread);
 #else
-	#error not implemented
+#error not implemented
+#endif
+}
+
+void thread_destroy(void* thread)
+{
+#if defined(CONF_FAMILY_UNIX)
+	void* r = 0;
+	pthread_join((pthread_t)thread, &r);
+#else
+	/*#error not implemented*/
 #endif
 }
 
@@ -658,33 +681,40 @@ void thread_yield()
 #elif defined(CONF_FAMILY_WINDOWS)
 	Sleep(0);
 #else
-	#error not implemented
+#error not implemented
 #endif
 }
 
 void thread_sleep(int milliseconds)
 {
 #if defined(CONF_FAMILY_UNIX)
-	usleep(milliseconds*1000);
+	usleep(milliseconds * 1000);
 #elif defined(CONF_FAMILY_WINDOWS)
 	Sleep(milliseconds);
 #else
-	#error not implemented
+#error not implemented
 #endif
 }
 
-void thread_detach(void *thread)
+void thread_detach(void* thread)
 {
 #if defined(CONF_FAMILY_UNIX)
 	pthread_detach((pthread_t)(thread));
 #elif defined(CONF_FAMILY_WINDOWS)
 	CloseHandle(thread);
 #else
-	#error not implemented
+#error not implemented
 #endif
 }
 
-
+void cpu_relax()
+{
+#if defined(CONF_ARCH_IA32) || defined(CONF_ARCH_AMD64)
+	_mm_pause();
+#else
+	(void)0;
+#endif
+}
 
 
 #if defined(CONF_FAMILY_UNIX)
@@ -692,19 +722,30 @@ typedef pthread_mutex_t LOCKINTERNAL;
 #elif defined(CONF_FAMILY_WINDOWS)
 typedef CRITICAL_SECTION LOCKINTERNAL;
 #else
-	#error not implemented on this platform
+#error not implemented on this platform
 #endif
 
 LOCK lock_create()
 {
-	LOCKINTERNAL *lock = (LOCKINTERNAL *)malloc(sizeof(*lock));
+	LOCKINTERNAL* lock = (LOCKINTERNAL*)malloc(sizeof(*lock));
+#if defined(CONF_FAMILY_UNIX)
+	int result;
+#endif
+
+	if(!lock)
+		return 0;
 
 #if defined(CONF_FAMILY_UNIX)
-	pthread_mutex_init(lock, 0x0);
+	result = pthread_mutex_init(lock, 0x0);
+	if(result != 0)
+	{
+		dbg_msg("lock", "init failed: %d", result);
+		return 0;
+}
 #elif defined(CONF_FAMILY_WINDOWS)
 	InitializeCriticalSection((LPCRITICAL_SECTION)lock);
 #else
-	#error not implemented on this platform
+#error not implemented on this platform
 #endif
 	return (LOCK)lock;
 }
@@ -712,11 +753,13 @@ LOCK lock_create()
 void lock_destroy(LOCK lock)
 {
 #if defined(CONF_FAMILY_UNIX)
-	pthread_mutex_destroy((LOCKINTERNAL *)lock);
+	int result = pthread_mutex_destroy((LOCKINTERNAL*)lock);
+	if(result != 0)
+		dbg_msg("lock", "destroy failed: %d", result);
 #elif defined(CONF_FAMILY_WINDOWS)
 	DeleteCriticalSection((LPCRITICAL_SECTION)lock);
 #else
-	#error not implemented on this platform
+#error not implemented on this platform
 #endif
 	free(lock);
 }
@@ -724,33 +767,37 @@ void lock_destroy(LOCK lock)
 int lock_trylock(LOCK lock)
 {
 #if defined(CONF_FAMILY_UNIX)
-	return pthread_mutex_trylock((LOCKINTERNAL *)lock);
+	return pthread_mutex_trylock((LOCKINTERNAL*)lock);
 #elif defined(CONF_FAMILY_WINDOWS)
 	return !TryEnterCriticalSection((LPCRITICAL_SECTION)lock);
 #else
-	#error not implemented on this platform
+#error not implemented on this platform
 #endif
 }
 
 void lock_wait(LOCK lock)
 {
 #if defined(CONF_FAMILY_UNIX)
-	pthread_mutex_lock((LOCKINTERNAL *)lock);
+	int result = pthread_mutex_lock((LOCKINTERNAL*)lock);
+	if(result != 0)
+		dbg_msg("lock", "lock failed: %d", result);
 #elif defined(CONF_FAMILY_WINDOWS)
 	EnterCriticalSection((LPCRITICAL_SECTION)lock);
 #else
-	#error not implemented on this platform
+#error not implemented on this platform
 #endif
 }
 
 void lock_unlock(LOCK lock)
 {
 #if defined(CONF_FAMILY_UNIX)
-	pthread_mutex_unlock((LOCKINTERNAL *)lock);
+	int result = pthread_mutex_unlock((LOCKINTERNAL*)lock);
+	if(result != 0)
+		dbg_msg("lock", "unlock failed: %d", result);
 #elif defined(CONF_FAMILY_WINDOWS)
 	LeaveCriticalSection((LPCRITICAL_SECTION)lock);
 #else
-	#error not implemented on this platform
+#error not implemented on this platform
 #endif
 }
 
